@@ -88,7 +88,7 @@ class Mover {
    * @since 2021-10-04
    * @type {string}
    */
-  static ApiKey = "bad4f410269432a4a496a99dfbff9cb6002d17cfb862ed8669ba9e6577cdc9da";
+  static ApiKey = process.env.movingtoken;
 
   /**
    * The position of the potion shop on the winter map.
