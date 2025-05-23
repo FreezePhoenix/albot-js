@@ -1,0 +1,1695 @@
+for (
+  var c_version = 2,
+    EPS = 1e-8,
+    ZEPS = 1e-8,
+    REPS = (Number && Number.EPSILON) || EPS,
+    CINF = 999999999999999,
+    colors = {
+      range: "#93A6A2",
+      armor: "#5C5D5E",
+      resistance: "#6A5598",
+      attack: "#DB2900",
+      str: "#F07F2F",
+      int: "#3E6EED",
+      dex: "#44B75C",
+      speed: "#36B89E",
+      cash: "#5DAC40",
+      hp: "#FF2E46",
+      mp: "#3a62ce",
+      stat_xp: "#4570B1",
+      party_xp: "#AD73E0",
+      xp: "#CBFFFF",
+      luck: "#2A9A3D",
+      gold: "gold",
+      male: "#43A1C6",
+      female: "#C06C9B",
+      server_success: "#85C76B",
+      server_failure: "#C7302C",
+      poison: "#41834A",
+      ability: "#ff9100",
+      xmas: "#C82F17",
+      xmasgreen: "#33BF6D",
+      codeblue: "#32A3B0",
+      codepink: "#E13758",
+      A: "#39BB54",
+      B: "#DB37A3",
+      npc_white: "#EBECEE",
+      white_positive: "#C3FFC0",
+      white_negative: "#FFDBDC",
+      serious_red: "#BC0004",
+      serious_green: "#428727",
+      heal: "#EE4D93",
+      lifesteal: "#9A1D27",
+    },
+    trade_slots = [],
+    check_slots = ["elixir"],
+    i = 1;
+  30 >= i;
+  i++
+) {
+  trade_slots.push("trade" + i), check_slots.push("trade" + i);
+}
+var bank_packs =
+    "items0 items1 items2 items3 items4 items5 items6 items7".split(" "),
+  character_slots =
+    "ring1 ring2 earring1 earring2 belt mainhand offhand helmet chest pants shoes gloves amulet orb elixir cape".split(
+      " "
+    ),
+  booster_items = ["xpbooster", "luckbooster", "goldbooster"],
+  can_buy = {};
+
+function process_game_data() {
+  G.quests = {};
+  for (var a in G.monsters) {
+    G.monsters[a].charge ||
+      ((G.monsters[a].charge =
+        60 <= G.monsters[a].speed
+          ? round(1.2 * G.monsters[a].speed)
+          : 50 <= G.monsters[a].speed
+          ? round(1.3 * G.monsters[a].speed)
+          : 32 <= G.monsters[a].speed
+          ? round(1.4 * G.monsters[a].speed)
+          : 20 <= G.monsters[a].speed
+          ? round(1.6 * G.monsters[a].speed)
+          : 10 <= G.monsters[a].speed
+          ? round(1.7 * G.monsters[a].speed)
+          : round(2 * G.monsters[a].speed)),
+      (G.monsters[a].max_hp = G.monsters[a].hp));
+  }
+  for (a in G.maps) {
+    var b = G.maps[a];
+    b.ignore ||
+      ((b.data = G.geometry[a]),
+      (b.items = {}),
+      (b.merchants = []),
+      (b.ref = b.ref || {}),
+      (b.npcs || []).forEach(function (d) {
+        if (d.position) {
+          var e = {
+              map: a,
+              in: a,
+              x: d.position[0],
+              y: d.position[1],
+              id: d.id,
+            },
+            g = G.npcs[d.id];
+          g.items &&
+            (b.merchants.push(e),
+            g.items.forEach(function (f) {
+              if (f) {
+                if (
+                  G.items[f].cash &&
+                  ((G.items[f].buy_with_cash = true), !G.items[f].p2w)
+                ) {
+                  return;
+                }
+                b.items[f] = b.items[f] || [];
+                b.items[f].push(e);
+                G.items[f].buy = can_buy[f] = true;
+              }
+            }));
+          b.ref[d.id] = e;
+          "newupgrade" == g.role && (b.upgrade = b.compound = e);
+          "exchange" == g.role && (b.exchange = e);
+          g.quest && (G.quests[g.quest] = e);
+        }
+      }));
+  }
+  for (var c in G.items) {
+    G.items[c].id = c;
+  }
+  G.maps.desertland.transporter = {
+    in: "desertland",
+    map: "desertland",
+    id: "transporter",
+    x: 0,
+    y: 0,
+  };
+}
+
+function test_logic() {
+  for (var a in G.items) {
+    (G.items[a].cash = 0), (G.items[a].g = G.items[a].g || 1);
+  }
+  for (a in G.monsters) {
+    G.monsters[a].xp = 0;
+  }
+}
+
+function hardcore_logic() {
+  for (var a in G.items) {
+  }
+  G.npcs.premium.items.forEach(function (b) {
+    b && ((G.items[b].cash = 0), (G.items[b].g = parseInt(2 * G.items[b].g)));
+  });
+  G.items.offering.g = parseInt(G.items.offering.g / 2);
+  G.items.xptome.g = 99999999;
+  G.items.computer.g = 1;
+  G.items.gemfragment.e = 10;
+  G.items.leather.e = 5;
+  G.maps.main.monsters.push({
+    type: "wabbit",
+    boundary: [-282, 702, 218, 872],
+    count: 1,
+  });
+  G.npcs.scrolls.items[9] = "vitscroll";
+  G.monsters.wabbit.evasion = 96;
+  G.monsters.wabbit.reflection = 96;
+  G.monsters.phoenix.respawn = 1;
+  G.monsters.mvampire.respawn = 1;
+}
+
+function can_stack(a, b, c) {
+  return a &&
+    b &&
+    a.name &&
+    G.items[a.name].s &&
+    a.name == b.name &&
+    a.l == b.l &&
+    1e4 > a.q + b.q + (c || 0)
+    ? true
+    : false;
+}
+
+function can_add_item(a, b, c) {
+  c || (c = {});
+  b.name || (b = create_new_item(b, c.q || 1));
+  if (is_array(a)) {
+    for (
+      a = {
+        items: a,
+      },
+        c = 0;
+      42 > c;
+      c++
+    ) {
+      if (!a.items[c]) {
+        return true;
+      }
+    }
+  }
+  if (0 < a.esize) {
+    return true;
+  }
+  if (G.items[b.name].s) {
+    for (c = 0; c < a.items.length; c++) {
+      if (can_stack(a.items[c], b)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function can_add_items(a, b, c) {
+  c || (c = {});
+  var d = b.length,
+    e = [];
+  if (a.esize + (c.space || 0) >= d) {
+    return true;
+  }
+  b.forEach(function (g) {
+    if (G.items[g.name].s) {
+      for (var f = 0; f < a.items.length; f++) {
+        can_stack(a.items[f], g, e[f] || 0) &&
+          ((e[f] = (e[f] || 0) + g.q), d--);
+      }
+    }
+  });
+  return a.esize + (c.space || 0) >= d ? true : false;
+}
+
+function object_sort(a, b) {
+  function c(g, f) {
+    return g[0] < f[0] ? -1 : 1;
+  }
+  var d = [],
+    e;
+  for (e in a) {
+    d.push([e, a[e]]);
+  }
+  b || d.sort(c);
+  return d;
+}
+
+function direction_logic(a, b, c) {}
+
+function within_xy_range(a, b) {
+  if (a["in"] != b["in"] || !a.vision) {
+    return false;
+  }
+  var c = get_x(b);
+  b = get_y(b);
+  var d = get_x(a),
+    e = get_y(a);
+  return d - a.vision[0] < c &&
+    c < d + a.vision[0] &&
+    e - a.vision[1] < b &&
+    b < e + a.vision[1]
+    ? true
+    : false;
+}
+
+function distance(_a, _b, in_check) {
+	// https://discord.com/channels/238332476743745536/1025784763958693958
+	if (!_a || !_b) return 99999999;
+	if ("in" in _a && "in" in _b && _a.in != _b.in) return 99999999;
+	if ("map" in _a && "map" in _b && _a.map != _b.map) return 99999999;
+
+	const a_x = get_x(_a);
+	const a_y = get_y(_a);
+	const b_x = get_x(_b);
+	const b_y = get_y(_b);
+  
+	const a_w2 = _a.width / 2
+	const a_h = _a.height
+	const b_w2 = _b.width / 2
+	const b_h = _b.height
+
+	// Check if they're just 2 points
+	if(a_w2 == 0 && a_h == 0 && b_w2 == 0 && b_h == 0) return Math.hypot(a_x - b_x, a_y - b_y)
+
+	// Check overlap
+	if ((a_x - a_w2) <= (b_x + b_w2)
+		&& (a_x + a_w2) >= (b_x - b_w2)
+		&& (a_y) >= (b_y - b_h) 
+		&& (a_y - a_h) <= (b_y) ) return 0
+
+	let min = 99999999;
+	let a_x1 = a_x + a_w2;
+	let a_x2 = a_x - a_w2;
+	let b_x1 = b_x + b_w2;
+	let b_x2 = b_x - b_w2;
+	let a_y1 = a_y;
+	let a_y2 = a_y - a_h;
+	let b_y1 = b_y;
+	let b_y2 = b_y - b_h;
+    let minX = Math.min(
+    	Math.abs(a_x1 - b_x1), 
+    	Math.abs(a_x1 - b_x2),
+    	Math.abs(a_x2 - b_x1), 
+    	Math.abs(a_x2 - b_x2)
+    );
+    let minY = Math.min(
+    	Math.abs(a_y1 - b_y1),
+    	Math.abs(a_y1 - b_y2),
+    	Math.abs(a_y2 - b_y1), 
+    	Math.abs(a_y2 - b_y2)
+    );
+    return Math.sqrt(minX * minX + minY * minY);
+}
+
+function distance_sq(_a, _b, in_check) {
+	// https://discord.com/channels/238332476743745536/1025784763958693958
+	if (!_a || !_b) return 99999999;
+	if ("in" in _a && "in" in _b && _a.in != _b.in) return 99999999;
+	if ("map" in _a && "map" in _b && _a.map != _b.map) return 99999999;
+
+	const a_x = get_x(_a);
+	const a_y = get_y(_a);
+	const b_x = get_x(_b);
+	const b_y = get_y(_b);
+  
+	const a_w2 = _a.width / 2
+	const a_h = _a.height
+	const b_w2 = _b.width / 2
+	const b_h = _b.height
+
+	// Check if they're just 2 points
+	if(a_w2 == 0 && a_h == 0 && b_w2 == 0 && b_h == 0) {
+    let dx = a_x - b_x;
+    let dy = a_y - b_y;
+    return dx * dx + dy * dy;
+  }
+
+	// Check overlap
+	if ((a_x - a_w2) <= (b_x + b_w2)
+		&& (a_x + a_w2) >= (b_x - b_w2)
+		&& (a_y) >= (b_y - b_h) 
+		&& (a_y - a_h) <= (b_y) ) return 0
+
+	let min = 99999999;
+	let a_x1 = a_x + a_w2;
+	let a_x2 = a_x - a_w2;
+	let b_x1 = b_x + b_w2;
+	let b_x2 = b_x - b_w2;
+	let a_y1 = a_y;
+	let a_y2 = a_y - a_h;
+	let b_y1 = b_y;
+	let b_y2 = b_y - b_h;
+    let minX = Math.min(
+    	Math.abs(a_x1 - b_x1), 
+    	Math.abs(a_x1 - b_x2),
+    	Math.abs(a_x2 - b_x1), 
+    	Math.abs(a_x2 - b_x2)
+    );
+    let minY = Math.min(
+    	Math.abs(a_y1 - b_y1),
+    	Math.abs(a_y1 - b_y2),
+    	Math.abs(a_y2 - b_y1), 
+    	Math.abs(a_y2 - b_y2)
+    );
+    return minX * minX + minY * minY;
+}
+
+function random_away(a, b, c) {
+  var d = 2 * Math.PI * Math.random(),
+    e = 2 * Math.random();
+  e = (1 < e && 2 - e) || e;
+  return [a + c * e * Math.cos(d), b + c * e * Math.sin(d)];
+}
+
+function can_transport(a) {
+  return can_walk(a);
+}
+
+function can_walk(a) {
+  return (is_game &&
+    a.me &&
+    transporting &&
+    8 > ssince(transporting) &&
+    !a.c.town) ||
+    (is_code &&
+      a.me &&
+      parent.transporting &&
+      8 > ssince(parent.transporting) &&
+      !a.c.town)
+    ? false
+    : !is_disabled(a);
+}
+
+function is_disabled(a) {
+  if (!a || a.rip || (a.s && a.s.stunned)) {
+    return true;
+  }
+}
+
+function calculate_item_grade(a, b) {
+  return a.upgrade || a.compound
+    ? ((b && b.level) || 0) >= (a.grades || [11, 12])[1]
+      ? 2
+      : ((b && b.level) || 0) >= (a.grades || [11, 12])[0]
+      ? 1
+      : 0
+    : 0;
+}
+
+function calculate_item_value(a) {
+  if (!a) {
+    return 0;
+  }
+  if (a.gift) {
+    return 1;
+  }
+  var b = G.items[a.name],
+    c = (b.cash && b.g) || 0.6 * b.g,
+    d = 1;
+  if (b.compound && a.level) {
+    for (var e = 0, g = b.grades || [11, 12], f = 1; f <= a.level; f++) {
+      f > g[1] ? (e = 2) : f > g[0] && (e = 1),
+        (c = b.cash ? 1.5 * c : 3.2 * c),
+        (c += G.items["cscroll" + e].g / 2.4);
+    }
+  }
+  if (b.upgrade && a.level) {
+    e = 0;
+    g = b.grades || [11, 12];
+    b = 0;
+    for (f = 1; f <= a.level; f++) {
+      f > g[1] ? (e = 2) : f > g[0] && (e = 1),
+        (b += G.items["scroll" + e].g / 2),
+        7 <= f
+          ? ((c *= 3), (b *= 1.32))
+          : 6 == f
+          ? (c *= 2.4)
+          : 4 <= f && (c *= 2),
+        9 == f && ((c *= 2.64), (c += 400000)),
+        10 == f && (c *= 5),
+        11 == f && (c *= 2),
+        12 == f && (c *= 1.8);
+    }
+    c += b;
+  }
+  a.expires && (d = 8);
+  return round(c / d) || 0;
+}
+var prop_cache = {};
+
+function damage_multiplier(a) {
+  return min(
+    1.32,
+    max(
+      0.05,
+      1 -
+        (0.001 * max(0, min(100, a)) +
+          0.001 * max(0, min(100, a - 100)) +
+          0.00095 * max(0, min(100, a - 200)) +
+          0.0009 * max(0, min(100, a - 300)) +
+          0.00082 * max(0, min(100, a - 400)) +
+          0.0007 * max(0, min(100, a - 500)) +
+          0.0006 * max(0, min(100, a - 600)) +
+          0.0005 * max(0, min(100, a - 700)) +
+          0.0004 * max(0, a - 800)) +
+        0.001 * max(0, min(50, 0 - a)) +
+        0.00075 * max(0, min(50, -50 - a)) +
+        0.0005 * max(0, min(50, -100 - a)) +
+        0.00025 * max(0, -150 - a)
+    )
+  );
+}
+
+function calculate_item_properties(a, b) {
+  var c =
+    a.name + (a.card || "") + "|" + b.level + "|" + b.stat_type + "|" + b.p;
+  if (prop_cache[c]) {
+    return prop_cache[c];
+  }
+  var d = {
+    gold: 0,
+    luck: 0,
+    xp: 0,
+    int: 0,
+    str: 0,
+    dex: 0,
+    charisma: 0,
+    cuteness: 0,
+    awesomeness: 0,
+    bling: 0,
+    vit: 0,
+    hp: 0,
+    mp: 0,
+    attack: 0,
+    range: 0,
+    armor: 0,
+    resistance: 0,
+    stat: 0,
+    speed: 0,
+    level: 0,
+    evasion: 0,
+    miss: 0,
+    reflection: 0,
+    lifesteal: 0,
+    attr0: 0,
+    attr1: 0,
+    rpiercing: 0,
+    apiercing: 0,
+    crit: 0,
+    dreturn: 0,
+    frequency: 0,
+    mp_cost: 0,
+    output: 0,
+  };
+  if (a.upgrade || a.compound) {
+    var e = a.upgrade || a.compound;
+    level = b.level || 0;
+    d.level = level;
+    for (var g = 1; g <= level; g++) {
+      var f = 1;
+      a.upgrade
+        ? (7 == g && (f = 1.25),
+          8 == g && (f = 1.5),
+          9 == g && (f = 2),
+          10 == g && (f = 3),
+          11 == g && (f = 1.25),
+          12 == g && (f = 1.5))
+        : a.compound &&
+          (5 == g && (f = 1.25),
+          6 == g && (f = 1.5),
+          7 == g && (f = 2),
+          8 <= g && (f = 3));
+      for (p in e) {
+        (d[p] = "stat" == p ? d[p] + round(e[p] * f) : d[p] + e[p] * f),
+          "stat" == p && 7 <= g && d.stat++;
+      }
+    }
+  }
+  for (p in a) {
+    void 0 != d[p] && (d[p] += a[p]);
+  }
+  for (p in d) {
+    in_arr(p, "evasion reflection lifesteal attr0 attr1 crit".split(" ")) ||
+      (d[p] = round(d[p]));
+  }
+  a.stat &&
+    b.stat_type &&
+    ((d[b.stat_type] +=
+      d.stat *
+      {
+        str: 1,
+        vit: 1,
+        dex: 1,
+        int: 1,
+        evasion: 0.125,
+        reflection: 0.875,
+        rpiercing: 1.25,
+        apiercing: 1.25,
+      }[b.stat_type]),
+    (d.stat = 0));
+  "shiny" == b.p
+    ? d.attack
+      ? (d.attack += 5)
+      : d.stat
+      ? (d.stat += 2)
+      : d.armor && ((d.armor += 15), (d.resistance = (d.resistance || 0) + 10))
+    : "superfast" == b.p && (d.frequency += 20);
+  return (prop_cache[c] = d);
+}
+
+function random_one(a) {
+  return a[parseInt(a.length * Math.random())];
+}
+
+function floor_f2(a) {
+  return parseInt(100 * a) / 100;
+}
+
+function to_pretty_float(a) {
+  if (!a) {
+    return "0";
+  }
+  var b = floor_f2(a).toFixed(2);
+  a = parseFloat(b);
+  parseFloat(b) == parseFloat(a.toFixed(1)) && (b = a.toFixed(1));
+  parseFloat(b) == parseFloat(parseInt(a)) && (b = parseInt(a));
+  return b;
+}
+
+function to_pretty_num(a) {
+  if (!a) {
+    return "0";
+  }
+  a = round(a);
+  for (var b = ""; a; ) {
+    var c = a % 1000;
+    c
+      ? 10 > c && c != a
+        ? (c = "00" + c)
+        : 100 > c && c != a && (c = "0" + c)
+      : (c = "000");
+    b = b ? c + "," + b : c;
+    a = (a - (a % 1000)) / 1000;
+  }
+  return "" + b;
+}
+
+function e_array(a) {
+  for (var b = [], c = 0; c < a; c++) {
+    b.push(null);
+  }
+  return b;
+}
+
+function set_xy(a, b, c) {
+  "real_x" in a ? ((a.real_x = b), (a.real_y = c)) : ((a.x = b), (a.y = c));
+}
+
+function get_xy(a) {
+  return [get_x(a), get_y(a)];
+}
+
+function get_x(a) {
+  return "real_x" in a ? a.real_x : a.x;
+}
+
+function get_y(a) {
+  return "real_y" in a ? a.real_y : a.y;
+}
+
+function simple_distance(a, b) {
+  var c = get_x(a),
+    d = get_y(a),
+    e = get_x(b),
+    g = get_y(b);
+  return a.map && b.map && a.map != b.map
+    ? 9999999
+    : ((c - e) * (c - e) + (d - g) * (d - g)) ** 0.5;
+}
+
+function simple_distance_sq(a, b) {
+  var c = get_x(a),
+    d = get_y(a),
+    e = get_x(b),
+    g = get_y(b);
+  return a.map && b.map && a.map != b.map
+    ? 9999999
+    : ((c - e) * (c - e) + (d - g) * (d - g));
+}
+
+function calculate_vxy(a, b) {
+  b || (b = 1);
+  a.ref_speed = a.speed;
+  var c = 0.0001 + (a.going_x - a.from_x) ** 2 + (a.going_y - a.from_y) ** 2;
+  c = (c + 0) ** 0.5;
+  a.vx = (a.speed * b * (a.going_x - a.from_x)) / c;
+  a.vy = (a.speed * b * (a.going_y - a.from_y)) / c;
+  a.angle =
+    (180 * Math.atan2(a.going_y - a.from_y, a.going_x - a.from_x)) / Math.PI;
+}
+
+function recalculate_vxy(a) {
+  a.moving &&
+    a.ref_speed != a.speed &&
+    (is_server && a.move_num++, calculate_vxy(a));
+}
+
+function is_in_front(a, b) {
+  b = (180 * Math.atan2(get_y(b) - get_y(a), get_x(b) - get_x(a))) / Math.PI;
+  return void 0 !== a.angle && 45 >= Math.abs(a.angle - b) ? true : false;
+}
+
+function real_bsearch_start(arr, value) {
+	var start = 0;
+	var count = arr.length;
+	var step;
+	var current;
+
+	while (count > 0) {
+		current = start;
+		step = Math.floor(count / 2);
+		current += step;
+		if (arr[current] < value) {
+			start = ++current;
+			count -= step + 1;
+		} else {
+			count = step;
+		}
+	}
+	return start;
+}
+
+function calculate_movex(map, cur_x, cur_y, target_x, target_y) {
+	if (target_x == Infinity) target_x = CINF;
+	if (target_y == Infinity) target_y = CINF;
+
+	var going_down = cur_y < target_y;
+	var going_right = cur_x < target_x;
+
+	var x_lines = map.x_lines ?? {
+		x: [],
+		y0: [],
+		y1: []
+	};
+	var y_lines = map.y_lines ?? {
+		y: [],
+		x0: [],
+		x1: []
+	};
+
+	var min_x = Math.min(cur_x, target_x);
+	var max_x = Math.max(cur_x, target_x);
+	var min_y = Math.min(cur_y, target_y);
+	var max_y = Math.max(cur_y, target_y);
+
+	var dx = target_x - cur_x;
+	var dy = target_y - cur_y;
+
+	var dydx = dy / (dx + REPS);
+
+	var dxdy = 1 / dydx;
+
+	var XEPS = 10 * EPS;
+
+
+	for (var i = real_bsearch_start(x_lines.x, min_x); i < x_lines.x.length; i++) {
+		var line_x = x_lines.x[i], line_xE = line_x + XEPS;
+		var line_y0 = x_lines.y0[i];
+		var line_y1 = x_lines.y1[i];
+		if (going_right) line_xE = line_x - XEPS;
+
+		if (max_x < line_x) {
+			break;
+		}
+		if (max_x < line_x || min_x > line_x || max_y < line_y0 || min_y > line_y1) {
+			continue;
+		}
+
+		var y_intersect = cur_y + (line_x - cur_x) * dydx;
+
+		if (eps_equal(cur_x, target_x) && eps_equal(cur_x, line_x)) {
+			line_xE = line_x;
+			if (going_down) {
+				y_intersect = Math.min(line_y0, line_y1) - XEPS;
+				target_y = Math.min(target_y, y_intersect);
+				max_y = target_y;
+			} else {
+				y_intersect = Math.max(line_y0, line_y1) + XEPS;
+				target_y = Math.min(target_y, y_intersect);
+				min_y = target_y;
+			}
+			continue;
+		}
+
+
+		if (y_intersect < line_y0 || y_intersect > line_y1) {
+			continue;
+		}
+
+
+		if (going_down) {
+			target_y = Math.min(target_y, y_intersect);
+			max_y = target_y;
+		} else {
+			target_y = Math.max(target_y, y_intersect);
+			min_y = target_y;
+		}
+
+		if (going_right) {
+			target_x = Math.min(target_x, line_xE); // Can never be directly on the lines themselves
+			max_x = target_x;
+		} else {
+			target_x = Math.max(target_x, line_xE);
+			min_x = target_x;
+		}
+	}
+
+	for (var i = real_bsearch_start(y_lines.y, min_y); i < y_lines.y.length; i++) {
+		var line_y = y_lines.y[i], line_yE = line_y + XEPS;
+		var line_x0 = y_lines.x0[i];
+		var line_x1 = y_lines.x1[i];
+		if (going_down) line_yE = line_y - XEPS;
+
+		if (max_y < line_y) {
+			break;
+		}
+		if (max_y < line_y || min_y > line_y || max_x < line_x0 || min_x > line_x1) {
+			continue;
+		}
+
+		var x_intersect = cur_x + (line_y - cur_y) * dxdy;
+
+		if (eps_equal(cur_y, target_y) && eps_equal(cur_y, line_y)) {
+			line_yE = line_y;
+			if (going_right) {
+				x_intersect = Math.min(line_x0, line_x1) - XEPS;
+				target_x = Math.min(target_x, x_intersect);
+				max_x = target_x;
+			} else {
+				x_intersect = Math.max(line_x0, line_x1) + XEPS;
+				target_x = Math.min(target_x, x_intersect);
+				min_x = target_x;
+			}
+			continue;
+		}
+
+		if (x_intersect < line_x0 || x_intersect > line_x1) {
+			continue;
+		}
+
+
+		if (going_right) {
+			target_x = Math.min(target_x, x_intersect);
+			max_x = target_x;
+		} else {
+			target_x = Math.max(target_x, x_intersect);
+			min_x = target_x;
+		}
+
+		if (going_down) {
+			target_y = Math.min(target_y, line_yE);
+			max_y = target_y;
+		} else {
+			target_y = Math.max(target_y, line_yE);
+			min_y = target_y;
+		}
+	}
+
+	return {
+		x: target_x,
+		y: target_y
+	};
+}
+
+function stripped_can_move_baseless(x0, y0, x1, y1, x_lines, y_lines, xstart = -1, ystart = -1) {
+	const minx = Math.min(x0, x1);
+	const maxx = Math.max(x0, x1);
+	const miny = Math.min(y0, y1);
+	const maxy = Math.max(y0, y1);
+
+	if (xstart === -1) {
+		xstart = real_bsearch_start(x_lines.x, minx);
+	}
+	for (let i = xstart; i < x_lines.x.length; i++) {
+		const lx = x_lines.x[i];
+		const ly0 = x_lines.y0[i];
+		const ly1 = x_lines.y1[i];
+		if (maxx < lx) {
+			break;
+		}
+		if (x1 == x0) {
+			if (lx == x1 && Math.max(miny, ly0) <= Math.min(maxy, ly1)) {
+				return false;
+			}
+		} else {
+			let AREA_MID = (lx - x0) * (y1 - y0);
+			let AREA_LOWER = (ly0 - y0) * (x1 - x0);
+			let AREA_UPPER = (ly1 - y0) * (x1 - x0);
+			if ((AREA_LOWER <= AREA_MID && AREA_MID <= AREA_UPPER) || (AREA_UPPER <= AREA_MID && AREA_MID <= AREA_LOWER)) {
+				return false;
+			}
+		}
+	}
+	if (ystart === -1) {
+		ystart = real_bsearch_start(y_lines.y, miny);
+	}
+	for (let i = ystart; i < y_lines.y.length; i++) {
+		const ly = y_lines.y[i];
+		const lx0 = y_lines.x0[i];
+		const lx1 = y_lines.x1[i];
+		if (maxy < ly) {
+			break;
+		}
+		if (y1 == y0) {
+			if (ly == y1 && Math.max(minx, lx0) <= Math.min(maxx, lx1)) {
+				return false;
+			}
+		} else {
+			let AREA_MID = (ly - y0) * (x1 - x0);
+			let AREA_LOWER = (lx0 - x0) * (y1 - y0);
+			let AREA_UPPER = (lx1 - x0) * (y1 - y0);
+			if ((AREA_LOWER <= AREA_MID && AREA_MID <= AREA_UPPER) || (AREA_UPPER <= AREA_MID && AREA_MID <= AREA_LOWER)) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+function stripped_can_move_based(monster, base) {
+	let GEO = G.geometry[monster.map] || {};
+
+	let x0 = monster.x;
+	let y0 = monster.y;
+	let x1 = monster.going_x;
+	let y1 = monster.going_y;
+
+	let minx = Math.min(x0, x1);
+	let miny = Math.min(y0, y1);
+
+	const x_lines = GEO.x_lines ?? {
+		x: [],
+		y0: [],
+		y1: []
+	};
+	const y_lines = GEO.y_lines ?? {
+		y: [],
+		x0: [],
+		x1: []
+	};
+
+	const x0a_ind = real_bsearch_start(x_lines.x, minx - base.h);
+	const y0a_ind = real_bsearch_start(y_lines.y, miny - base.v);
+
+	if (
+		!stripped_can_move_baseless(
+			x0 - base.h,
+            y0 - base.v,
+            x1 - base.h, 
+            y1 - base.v,
+			x_lines,
+			y_lines,
+			x0a_ind,
+			y0a_ind,
+		)
+	) {
+		return false;
+	}
+
+	const x0b_ind = real_bsearch_start(x_lines.x, minx + base.h);
+	if (
+		!stripped_can_move_baseless(
+			x0 + base.h,
+            y0 - base.v,
+            x1 + base.h,
+            y1 - base.v,
+			x_lines,
+			y_lines,
+			x0b_ind,
+			y0a_ind,
+		)
+	) {
+		return false;
+	}
+
+	const y0b_ind = real_bsearch_start(y_lines.y, miny + base.vn);
+	if (
+		!stripped_can_move_baseless(
+			x0 - base.h,
+            y0 + base.vn,
+            x1 - base.h,
+            y1 + base.vn,
+			x_lines,
+			y_lines,
+			x0a_ind,
+			y0b_ind,
+		)
+	) {
+		return false;
+	}
+
+	if (
+		!stripped_can_move_baseless(
+			x0 + base.h,
+            y0 + base.vn,
+            x1 + base.h,
+            y1 + base.vn,
+			x_lines,
+			y_lines,
+			x0b_ind,
+			y0b_ind,
+		)
+	) {
+		return false;
+	}
+	// fence logic, orphan lines - at the destination, checks whether we can move from one rectangle point to the other, if we can't move, it means a line penetrated the rectangle
+	// [20/07/18]
+	let px0 = base.h;
+	let px1 = -base.h; // going left
+	if (x1 > x0) {
+		px0 = -base.h;
+		px1 = base.h;
+	} // going right
+	let py0 = base.vn;
+	let py1 = -base.v; // going up
+	if (y1 > y0) {
+		py0 = -base.v;
+		py1 = base.vn;
+	} // going down
+
+	if (
+		!stripped_can_move_baseless(
+            x1 + px1,
+            y1 + py0,
+            x1 + px1,
+            y1 + py1,
+            x_lines,
+            y_lines
+        )
+	) {
+		return false;
+	}
+	if (
+		!stripped_can_move_baseless(
+            x1 + px0,
+            y1 + py1,
+            x1 + px1,
+            y1 + py1,
+            x_lines,
+            y_lines
+        )
+	) {
+		return false;
+	}
+	return true;
+}
+
+function can_move(monster, based) {
+	if(!based && monster.base) {
+		return stripped_can_move_based(monster, monster.base);
+	} else {
+		const GEO = G.geometry[monster.map] ?? {};
+		const x_lines = GEO.x_lines ?? {
+			x: [],
+			y0: [],
+			y1: []
+		};
+		const y_lines = GEO.y_lines ?? {
+			y: [],
+			x0: [],
+			x1: []
+		};
+		return stripped_can_move_baseless(monster.x, monster.y, monster.going_x, monster.going_y, x_lines, y_lines);
+	}
+}
+
+function get_height(a) {
+  return a.me ? a.aheight : a.mscale ? a.height / a.mscale : a.height;
+}
+
+function get_width(a) {
+  return a.me ? a.awidth : a.mscale ? a.width / a.mscale : a.width;
+}
+
+function set_base(a) {
+  var b = a.mtype || a.type;
+  a.base = {
+    h: 8,
+    v: 7,
+    vn: 2,
+  };
+  G.dimensions[b] && G.dimensions[b][3]
+    ? ((a.base.h = G.dimensions[b][3]),
+      (a.base.v = min(9.9, G.dimensions[b][4])))
+    : ((a.base.h = min(12, 0.8 * get_width(a))),
+      (a.base.v = min(9.9, get_height(a) / 4)));
+}
+
+function calculate_move_v2(a, b, c, d, e) {
+  Infinity == d && (d = CINF);
+  Infinity == e && (e = CINF);
+  var g = calculate_movex(a, b, c, d, e);
+  return g.x != d && g.y != e
+    ? ((d = calculate_movex(a, b, c, d, g.y)),
+      d.x == g.x && (d = calculate_movex(a, b, c, d.x, e)),
+      d)
+    : g;
+}
+var m_calculate = false,
+  m_line_x = false,
+  m_line_y = false,
+  line_hit_x = null,
+  line_hit_y = null,
+  m_dx,
+  m_dy;
+
+function calculate_move(a, b, c) {
+  function d(m) {
+    var v = m[0];
+    m = m[1];
+    if (
+      can_move({
+        map: e,
+        x: g,
+        y: f,
+        going_x: v,
+        going_y: m,
+        base: a.base,
+      })
+    ) {
+      var h = point_distance(b, c, v, m);
+      h < w &&
+        ((w = h),
+        (n = {
+          x: v,
+          y: m,
+        }));
+    }
+    null !== line_hit_x &&
+      (u.push([line_hit_x, line_hit_y]), (line_hit_y = line_hit_x = null));
+  }
+  m_calculate = true;
+  var e = a.map,
+    g = get_x(a),
+    f = get_y(a),
+    k = [[0, 0]],
+    r = [[b, c]],
+    u = [];
+  a.base &&
+    (k = [
+      [-a.base.h, a.base.vn],
+      [a.base.h, a.base.vn],
+      [-a.base.h, -a.base.v],
+      [a.base.h, -a.base.v],
+    ]);
+  k.forEach(function (m) {
+    for (var v = 0; 3 > v; v++) {
+      var h = m[0],
+        q = m[1],
+        l = b + h,
+        t = c + q;
+      1 == v && (l = g + h);
+      2 == v && (t = f + q);
+      l = calculate_movex(G.geometry[e] || {}, g + h, f + q, l, t);
+      point_distance(g + h, f + q, l.x, l.y);
+      h = l.x - h;
+      q = l.y - q;
+      in_arrD2([h, q], r) || r.push([h, q]);
+    }
+  });
+  var n = {
+      x: g,
+      y: f,
+    },
+    w = CINF;
+  r.forEach(d);
+  u.forEach(d);
+  point_distance(g, f, n.x, n.y) < 10 * EPS &&
+    (n = {
+      x: g,
+      y: f,
+    });
+  m_calculate = false;
+  return n;
+}
+
+function point_distance(a, b, c, d) {
+  return ((c - a) * (c - a) + (d - b) * (d - b)) ** 0.5;
+}
+
+function recalculate_move(a) {
+  move = calculate_move(a, a.going_x, a.going_y);
+  a.going_x = move.x;
+  a.going_y = move.y;
+}
+
+function bsearch_start(a, b) {
+  for (var c = 0, d = a.length - 1, e; c < d - 1; ) {
+    (e = (c + d) >> 1), a[e][0] < b ? (c = e) : (d = e - 1);
+  }
+  return c;
+}
+
+function closest_line(a, b, c) {
+  var d = 16000;
+  [
+    [0, 16000],
+    [0, -16e3],
+    [16000, 0],
+    [-16e3, 0],
+  ].forEach(function (e) {
+    e = calculate_move(
+      {
+        map: a,
+        x: b,
+        y: c,
+      },
+      b + e[0],
+      c + e[1]
+    );
+    e = point_distance(b, c, e.x, e.y);
+    e < d && (d = e);
+  });
+  return d;
+}
+
+function unstuck_logic(a) {
+  if (
+    !can_move({
+      map: a.map,
+      x: get_x(a),
+      y: get_y(a),
+      going_x: get_x(a),
+      going_y: get_y(a) + EPS / 2,
+      base: a.base,
+    })
+  ) {
+    var b = false;
+    can_move({
+      map: a.map,
+      x: get_x(a),
+      y: get_y(a) + 8.1,
+      going_x: get_x(a),
+      going_y: get_y(a) + 8.1 + EPS / 2,
+      base: a.base,
+    })
+      ? (set_xy(a, get_x(a), get_y(a) + 8.1), (b = true))
+      : can_move({
+          map: a.map,
+          x: get_x(a),
+          y: get_y(a) - 8.1,
+          going_x: get_x(a),
+          going_y: get_y(a) - 8.1 - EPS / 2,
+          base: a.base,
+        }) && (set_xy(a, get_x(a), get_y(a) - 8.1), (b = true));
+    b
+      ? console.log("Blinked onto line, fixed")
+      : console.log("#CRITICAL: Couldn't fix blink onto line issue");
+  }
+}
+
+function stop_logic(monster) {
+  if (!monster.moving) return;
+  var x = get_x(monster),
+    y = get_y(monster);
+  // old: if((monster.from_x<=monster.going_x && x>=monster.going_x) || (monster.from_x>=monster.going_x && x<=monster.going_x) || abs(x-monster.going_x)<0.3 || abs(y-monster.going_y)<0.3)
+  if (
+    ((monster.from_x <= monster.going_x && x >= monster.going_x - 0.1) ||
+      (monster.from_x >= monster.going_x && x <= monster.going_x + 0.1)) &&
+    ((monster.from_y <= monster.going_y && y >= monster.going_y - 0.1) ||
+      (monster.from_y >= monster.going_y && y <= monster.going_y + 0.1))
+  ) {
+    set_xy(monster, monster.going_x, monster.going_y);
+
+    //monster.going_x=undefined; - setting these to undefined had bad side effects, where a character moves in the client side, stops in server, and going_x becoming undefined mid transit client side [18/06/18]
+    //monster.going_y=undefined;
+
+    if (monster.loop) {
+      monster.going_x =
+        monster.positions[(monster.last_m + 1) % monster.positions.length][0];
+      monster.going_y =
+        monster.positions[++monster.last_m % monster.positions.length][1];
+      monster.u = true;
+      start_moving_element(monster);
+      return;
+    }
+
+    monster.moving = monster.amoving || false;
+    monster.vx = monster.vy = 0; // added these 2 lines, as the character can walk outside when setTimeout ticks at 1000ms's [26/07/16]
+    // if(monster.me) console.log(monster.real_x+","+monster.real_y);
+    if (monster.name_tag) stop_name_tag(monster);
+    if (monster.me) {
+      resolve_deferreds("move", { reason: "stopped" });
+    }
+  }
+}
+
+function is_door_close(a, b, c, d) {
+  a = G.maps[a].spawns[b[6]];
+  return 40 > point_distance(c, d, a[0], a[1]) ||
+    40 >
+      distance(
+        {
+          x: c,
+          y: d,
+          width: 26,
+          height: 35,
+        },
+        {
+          x: b[0],
+          y: b[1],
+          width: b[2],
+          height: b[3],
+        }
+      )
+    ? true
+    : false;
+}
+
+function can_use_door(a, b, c, d) {
+  var e = G.maps[a].spawns[b[6]];
+  if (
+    40 > point_distance(c, d, e[0], e[1]) &&
+    can_move({
+      map: a,
+      x: c,
+      y: d,
+      going_x: e[0],
+      going_y: e[1],
+    })
+  ) {
+    return true;
+  }
+  if (
+    40 >
+    distance(
+      {
+        x: c,
+        y: d,
+        width: 26,
+        height: 35,
+      },
+      {
+        x: b[0],
+        y: b[1],
+        width: b[2],
+        height: b[3],
+      }
+    )
+  ) {
+    var g = false;
+    [
+      [0, 0],
+      [-b[2] / 2, 0],
+      [b[2] / 2, 0],
+      [-b[2] / 2, -b[3]],
+      [b[2] / 2, -b[3]],
+      [0, -b[3]],
+    ].forEach(function (f) {
+      can_move({
+        map: a,
+        x: c,
+        y: d,
+        going_x: b[0] + f[0],
+        going_y: b[1] + f[1],
+      }) && (g = true);
+    });
+    if (g) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function trigger(a) {
+  setTimeout(a, 0);
+}
+
+function to_number(a) {
+  try {
+    a = round(parseInt(a));
+    if (0 > a) {
+      return 0;
+    }
+    a || (a = 0);
+  } catch (b) {
+    a = 0;
+  }
+  return a;
+}
+
+function is_number(a) {
+  try {
+    if (!isNaN(a) && 0 + a === a) {
+      return true;
+    }
+  } catch (b) {}
+  return false;
+}
+
+function is_string(a) {
+  try {
+    return "[object String]" == Object.prototype.toString.call(a);
+  } catch (b) {}
+  return false;
+}
+
+function is_array(a) {
+  return Array.isArray(a);
+}
+
+function is_function(a) {
+  try {
+    var b = {};
+    return a && "[object Function]" === b.toString.call(a);
+  } catch (c) {}
+  return false;
+}
+
+function is_object(a) {
+  return null !== a && "object" === typeof a;
+}
+
+function clone(a, b) {
+  b || (b = {});
+  b.seen || b.seen === [] || (b.seen = []);
+  if (null == a) {
+    return a;
+  }
+  if (b.simple_functions && is_function(a)) {
+    return "[clone]:" + a.toString().substring(0, 40);
+  }
+  if ("object" != typeof a) {
+    return a;
+  }
+  if (a instanceof Date) {
+    var c = performance.now();
+    c.setTime(a.getTime());
+    return c;
+  }
+  if (a instanceof Array) {
+    b.seen.push(a);
+    c = [];
+    for (var d = 0; d < a.length; d++) {
+      c[d] = clone(a[d], b);
+    }
+    return c;
+  }
+  if (a instanceof Object) {
+    b.seen.push(a);
+    c = {};
+    for (d in a) {
+      a.hasOwnProperty(d) &&
+        (-1 !== b.seen.indexOf(a[d])
+          ? (c[d] = "circular_attribute[clone]")
+          : (c[d] = clone(a[d], b)));
+    }
+    return c;
+  }
+  throw "type not supported";
+}
+
+function safe_stringify(a, b) {
+  var c = [];
+  try {
+    var d = JSON.stringify(
+      a,
+      function (e, g) {
+        if (null != g && "object" == typeof g) {
+          if (0 <= c.indexOf(g)) {
+            return;
+          }
+          c.push(g);
+        }
+        return g;
+      },
+      b
+    );
+    "x" in a &&
+      ((d = JSON.parse(d)), (d.x = a.x), (d.y = a.y), (d = JSON.stringify(d)));
+    return d;
+  } catch (e) {
+    return "safe_stringify_exception";
+  }
+}
+
+function smart_eval(a, b) {
+  a &&
+    (b && !is_array(b) && (b = [b]),
+    is_function(a)
+      ? b
+        ? a.apply(this, clone(b))
+        : a()
+      : is_string(a) && eval(a));
+}
+
+function is_substr(a, b) {
+  if (is_array(b)) {
+    for (var c = 0; c < b.length; c++) {
+      try {
+        if (a && -1 != a.toLowerCase().indexOf(b[c].toLowerCase())) {
+          return true;
+        }
+      } catch (d) {}
+    }
+  } else {
+    try {
+      if (a && -1 != a.toLowerCase().indexOf(b.toLowerCase())) {
+        return true;
+      }
+    } catch (d) {}
+  }
+  return false;
+}
+
+function seed0() {
+  return parseInt(performance.now().getMinutes() / 10);
+}
+
+function seed1() {
+  return parseInt(performance.now().getSeconds() / 10);
+}
+
+function to_title(a) {
+  return a.replace(/\w\S*/g, function (b) {
+    return b.charAt(0).toUpperCase() + b.substr(1).toLowerCase();
+  });
+}
+
+function ascending_comp(a, b) {
+  return a - b;
+}
+
+function delete_indices(a, b) {
+  b.sort(ascending_comp);
+  for (var c = b.length - 1; 0 <= c; c--) {
+    a.splice(b[c], 1);
+  }
+}
+
+function array_delete(a, b) {
+  b = a.indexOf(b);
+  -1 < b && a.splice(b, 1);
+}
+
+function in_arr(i, kal) {
+  if (Array.isArray(i)) {
+    for (var j = 0; j < i.length; j++) {
+      let it = i[j];
+      for (var k = 0; k < kal.length; k++) {
+        if (it === kal[k]) {
+          return true;
+        }
+      }
+    }
+  }
+  for (var j = 0; j < kal.length; j++) {
+    if (i === kal[j]) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function in_arrD2(a, b) {
+  for (var c = 0; c < b.length; c++) {
+    if (a[0] == b[c][0] && a[1] == b[c][1]) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function c_round(a) {
+  return floor_xy ? Math.floor(a) : round_xy ? Math.round(a) : a;
+}
+
+function round(a) {
+  return Math.round(a);
+}
+
+function sq(a) {
+  return a * a;
+}
+
+function sqrt(a) {
+  return Math.sqrt(a);
+}
+
+function floor(a) {
+  return Math.floor(a);
+}
+
+function ceil(a) {
+  return Math.ceil(a);
+}
+
+function eps_equal(a, b) {
+  return Math.abs(a - b) < 5 * EPS;
+}
+
+function abs(a) {
+  return Math.abs(a);
+}
+
+function min(a, b) {
+  return Math.min(a, b);
+}
+
+function max(a, b) {
+  return Math.max(a, b);
+}
+
+function shuffle(a) {
+  var b;
+  for (b = a.length; b; b--) {
+    var c = Math.floor(Math.random() * b);
+    var d = a[b - 1];
+    a[b - 1] = a[c];
+    a[c] = d;
+  }
+  return a;
+}
+
+function random_binary() {
+  for (var a = "", b = 0; b < 2 + parseInt(12 * Math.random()); b++) {
+    a = 0.5 > Math.random() ? a + "0" : a + "1";
+  }
+  return a;
+}
+
+function random_binaries() {
+  for (var a = "", b = 0; b < 7 + parseInt(23 * Math.random()); b++) {
+    a += random_binary() + " ";
+  }
+  return a;
+}
+
+function randomStr(a) {
+  for (var b = "", c = 0; c < a; c++) {
+    if (0 == c) {
+      var d = ~~(51 * Math.random());
+      b += "ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz".substring(
+        d,
+        d + 1
+      );
+    } else {
+      (d = ~~(61 * Math.random())),
+        (b +=
+          "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz".substring(
+            d,
+            d + 1
+          ));
+    }
+  }
+  return b;
+}
+
+function lstack(a, b, c) {
+  for (a.unshift(b); a.length > c; ) {
+    a.pop();
+  }
+}
+String.prototype.replace_all = function (a, b) {
+  return this.replace(
+    new RegExp(a.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&"), "g"),
+    b
+  );
+};
+
+function html_escape(a) {
+  var b = [
+      [/&/g, "&amp;"],
+      [/</g, "&lt;"],
+      [/>/g, "&gt;"],
+      [/"/g, "&quot;"],
+    ],
+    c;
+  for (c in b) {
+    a = a.replace(b[c][0], b[c][1]);
+  }
+  return a;
+}
+
+function he(a) {
+  return html_escape(a);
+}
+
+function future_ms(a) {
+  return performance.now() + a;
+}
+
+function future_s(a) {
+  return performance.now() + a * 1000;
+}
+
+function mssince(a, b) {
+  b ??= performance.now();
+  return b - a;
+}
+
+function ssince(a, b) {
+  return mssince(a, b) / 1000;
+}
+
+function msince(a, b) {
+  return mssince(a, b) / 60000;
+}
+
+function hsince(a, b) {
+  return mssince(a, b) / 3600000;
+}
+
+function log_trace(a, b) {
+  console.log("\n====================");
+  "object" === typeof b
+    ? (b.message && console.log("Exception[" + a + "]:\n" + b.message),
+      b.stack && (console.log("Stacktrace:"), console.log(b.stack)))
+    : console.log("log_trace: argument is not an object on :" + a);
+  console.log("====================\n");
+}
+
+function rough_size(a) {
+  var b = [];
+  a = [a];
+  for (var c = 0; a.length; ) {
+    var d = a.pop();
+    if ("boolean" === typeof d) {
+      c += 4;
+    } else {
+      if ("string" === typeof d) {
+        c += 2 * d.length;
+      } else {
+        if ("number" === typeof d) {
+          c += 8;
+        } else {
+          if ("object" === typeof d && -1 === b.indexOf(d)) {
+            b.push(d);
+            for (var e in d) {
+              a.push(d[e]);
+            }
+          }
+        }
+      }
+    }
+  }
+  return c;
+}

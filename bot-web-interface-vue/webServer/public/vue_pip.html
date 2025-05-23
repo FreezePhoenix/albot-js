@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Vue and Picture in Picture</title>
+		<script type="importmap">
+			{
+				"imports": {
+					"vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+				}
+			}
+		</script>
+	</head>
+
+	<!--
+This example demonstrates handling user input with the v-on directive.
+-->
+	<body>
+		<script type="module">
+			import { createApp, ref } from 'vue';
+
+			createApp({
+				setup() {
+					const message = ref('Hello World!');
+
+					function reverseMessage() {
+						// Access/mutate the value of a ref via
+						// its .value property.
+						message.value = message.value
+							.split('')
+							.reverse()
+							.join('');
+					}
+          
+					const list = ref([0]);
+					function append() {
+						list.value.push(list.value.length);
+					}
+
+					return {
+						list,
+						append,
+						message,
+						reverseMessage
+					};
+				},
+			}).mount('#app');
+			let MESSAGE_BOX = document.getElementById('message');
+			let MESSAGE_CONTAINER = document.getElementById('messagecontainer');
+			const inPipMessage = document.getElementById('in-pip-message');
+
+			if ('documentPictureInPicture' in window) {
+				const togglePipButton = document.createElement('button');
+				togglePipButton.textContent = 'Toggle Picture-in-Picture';
+				togglePipButton.addEventListener(
+					'click',
+					togglePictureInPicture,
+					false
+				);
+				document.body.appendChild(togglePipButton);
+			}
+
+			async function togglePictureInPicture() {
+				// Early return if there's already a Picture-in-Picture window open
+				if (window.documentPictureInPicture.window) {
+					inPipMessage.style.display = 'none';
+					MESSAGE_CONTAINER.append(MESSAGE_BOX);
+					window.documentPictureInPicture.window.close();
+					return;
+				}
+
+				// Open a Picture-in-Picture window.
+				const pipWindow =
+					await window.documentPictureInPicture.requestWindow({
+						width: MESSAGE_BOX.clientWidth,
+						height: MESSAGE_BOX.clientHeight + 50,
+					});
+
+				// Add pagehide listener to handle the case of the pip window being closed using the browser X button
+				pipWindow.addEventListener('pagehide', (event) => {
+					inPipMessage.style.display = 'none';
+					MESSAGE_CONTAINER.append(MESSAGE_BOX);
+				});
+
+				// Copy style sheets over from the initial document
+				// so that the player looks the same.
+				[...document.styleSheets].forEach((styleSheet) => {
+					try {
+						const cssRules = [...styleSheet.cssRules]
+							.map((rule) => rule.cssText)
+							.join('');
+						const style = document.createElement('style');
+
+						style.textContent = cssRules;
+						pipWindow.document.head.appendChild(style);
+					} catch (e) {
+						const link = document.createElement('link');
+
+						link.rel = 'stylesheet';
+						link.type = styleSheet.type;
+						link.media = styleSheet.media;
+						link.href = styleSheet.href;
+						pipWindow.document.head.appendChild(link);
+					}
+				});
+
+				// Move the player to the Picture-in-Picture window.
+				pipWindow.document.body.append(MESSAGE_BOX);
+
+				// Display a message to say it has been moved
+				inPipMessage.style.display = 'block';
+			}
+		</script>
+
+		<div id="app">
+			<!--
+    Note we don't need .value inside templates because
+    refs are automatically "unwrapped" in templates.
+  -->
+			<div id="messagecontainer">
+				<div id="message">
+					<h1>{{ message }}</h1>
+					<ul v-if="list.length">
+						<li v-for="item of list">{{ item }}</li>
+					</ul>
+				</div>
+			</div>
+			<p id="in-pip-message" style="display: none">
+				Vue box is currently in the separate Picture-in-Picture window.
+			</p>
+
+			<!--
+    Bind to a method/function.
+    The @click syntax is short for v-on:click.
+  -->
+			<button @click="reverseMessage">Reverse Message</button>
+			<button @click="append">Add item to list</button>
+
+			<!-- Can also be an inline expression statement -->
+			<button @click="message += '!'">Append "!"</button>
+		</div>
+	</body>
+</html>
