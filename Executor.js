@@ -26,6 +26,7 @@ class Executor {
     log("Executing " + this.file);
     try {
       let CONTEXT = {
+        process,
         localStorage,
         active: false,
         catch_errors: true,
