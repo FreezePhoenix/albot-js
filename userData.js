@@ -1,6 +1,6 @@
 const SCRIPT = "BScorpionPriest.js"
 const SERVER = "US I";
-let RUN_MERCH = false;
+let RUN_MERCH = process.env.runmerch == "true";
 module.exports = {
     "config": {
         "fetch": false,
