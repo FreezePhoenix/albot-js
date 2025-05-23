@@ -1,4 +1,5 @@
 require('dotenv').config();
+console.log("Run merch: " + process.env.runmerch + " - " + typeof process.env.runmerch);
 process.on('uncaughtException', function (exception) {
 	console.log(exception);
 	console.log(exception.stack);
