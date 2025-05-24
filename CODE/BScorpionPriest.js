@@ -766,6 +766,7 @@ if (character.name == 'Geoffriel') {
 		[L_ORB_FILTER, 'orb'],
 		[L_GLOVE_FILTER, 'gloves'],
 		[L_BOOTS_FILTER, 'shoes'],
+		[L_BELT_FILTER, 'belt']
 	];
 	setInterval(() => {
 		let mtarget = character.target;
@@ -804,6 +805,9 @@ if (character.name == 'Geoffriel') {
 	const D_GLOVE_FILTER = ItemFilter.ofName('gloves')
 		.level('13', '==')
 		.build();
+	const D_BELT_FILTER = ItemFilter.ofName('intbelt')
+		.level('5', '==')
+		.build();
 	const D_BOOTS_FILTER = ItemFilter.ofName('wingedboots')
 		.level('10', '==')
 		.build();
@@ -839,6 +843,7 @@ if (character.name == 'Geoffriel') {
 		[D_EARRING_FILTER, 'earring1'],
 		[D_EARRING_FILTER, 'earring2'],
 		[D_HELMET_FILTER, 'helmet'],
+		[D_BELT_FILTER, 'belt']
 	];
 	let GOLD_SET = [
 		[G_RING1_FILTER, 'ring1'],
