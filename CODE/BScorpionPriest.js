@@ -724,7 +724,8 @@ const D_RING1_FILTER = ItemFilter.ofName('zapper').build();
 if (character.name == 'Geoffriel') {
 	// LUCK FILTERS
 	const L_HELMET_FILTER = ItemFilter.ofName('wcap').level('8', '==').build();
-	const L_EARRING_FILTER = ItemFilter.ofName('dexearringx').build();
+	const L_EARRING1_FILTER = ItemFilter.ofName('mearring').build();
+	const L_EARRING2_FILTER = ItemFilter.ofName('dexearringx').build();
 	const L_AMULET_FILTER = ItemFilter.ofName('spookyamulet').build();
 	const L_STAFF_FILTER = ItemFilter.ofName('lmace')
 		.level('4', '==')
@@ -743,24 +744,25 @@ if (character.name == 'Geoffriel') {
 	const L_PANTS_FILTER = ItemFilter.ofName('wbreeches')
 		.level('6', '==')
 		.build();
-	const L_RING1_FILTER = ItemFilter.ofName('ringhs').build();
-	const L_RING2_FILTER = ItemFilter.ofName('ringofluck').build();
+	const L_RING_FILTER = ItemFilter.ofName('ringhs').build();
 	const L_ORB_FILTER = ItemFilter.ofName('rabbitsfoot').build();
+	const L_BELT_FILTER = ItemFilter.ofName('santasbelt').level('3', '==').build();
 	const L_GLOVE_FILTER = ItemFilter.ofName('wgloves')
 		.level('7', '==')
 		.build();
 	const L_BOOTS_FILTER = ItemFilter.ofName('wshoes').level('9', '==').build();
 	let LUCK_SET = [
 		[L_HELMET_FILTER, 'helmet'],
-		[L_EARRING_FILTER, 'earring2'],
+		[L_EARRING1_FILTER, 'earring1'],
+		[L_EARRING2_FILTER, 'earring2'],
 		[L_AMULET_FILTER, 'amulet'],
 		[L_STAFF_FILTER, 'mainhand'],
 		[L_CHEST_FILTER, 'chest'],
 		[L_OFFHAND_FILTER, 'offhand'],
 		[L_CAPE_FILTER, 'cape'],
 		[L_PANTS_FILTER, 'pants'],
-		[L_RING1_FILTER, 'ring1'],
-		[L_RING2_FILTER, 'ring2'],
+		[L_RING_FILTER, 'ring1'],
+		[L_RING_FILTER, 'ring2'],
 		[L_ORB_FILTER, 'orb'],
 		[L_GLOVE_FILTER, 'gloves'],
 		[L_BOOTS_FILTER, 'shoes'],
@@ -834,6 +836,7 @@ if (character.name == 'Geoffriel') {
 		[D_CHEST_FILTER, 'chest'],
 		[D_STAFF_FILTER, 'mainhand'],
 		[D_AMULET_FILTER, 'amulet'],
+		[D_EARRING_FILTER, 'earring1'],
 		[D_EARRING_FILTER, 'earring2'],
 		[D_HELMET_FILTER, 'helmet'],
 	];
