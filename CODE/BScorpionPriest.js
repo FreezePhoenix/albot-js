@@ -734,7 +734,7 @@ if (character.name == 'Geoffriel') {
 		.level('6', '==')
 		.build();
 	const L_OFFHAND_FILTER = ItemFilter.ofName('mshield')
-		.level('8', '==')
+		.level('9', '==')
 		.build();
 	const L_CAPE_FILTER = ItemFilter.ofName('ecape')
 		.level('8', '==')
