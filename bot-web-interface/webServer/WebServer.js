@@ -62,9 +62,9 @@ class SocketServer {
           socket.on('command', (data) => {
           let is_authed = process.env.master_auth_key != null && data.auth_key == process.env.master_auth_key;
           if (is_authed) {
-            listeners['command'].forEach(func => func(Object.assign(data, {admin: true })));
+            listeners['command'].forEach(func => func(Object.assign(data, {admin: true})));
           } else {
-            listeners['command'].forEach(func => func(Object.assign(data, {admin: false, keyyyy: process.env.master_auth_key })));
+            listeners['command'].forEach(func => func(Object.assign(data, {admin: false})));
           }
         })
         });
