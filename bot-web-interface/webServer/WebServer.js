@@ -27,6 +27,7 @@ var Publisher = require("./Publisher");
 
 var defaultPort = 80;
 
+let listeners = {}
 class SocketServer {
     constructor() {
         this.publisher = new Publisher(this);
@@ -44,6 +45,13 @@ class SocketServer {
     getPublisher() {
         return this.publisher;
     };
+    on(message, handler) {
+      if (listeners[message]) {
+        listeners[message].push(handler);
+      } else {
+        listeners[message] = [handler];
+      }
+    }
     openSocket() {
         this.io = Server(server);
         this.io.sockets.on('connection', (socket) => {
@@ -51,6 +59,14 @@ class SocketServer {
                 dataList: this.publisher.dataList,
                 structure: this.publisher.structure
             });
+          socket.on('command', (data) => {
+          let is_authed = process.env.master_auth_key != null && data.auth_key == process.env.master_auth_key;
+          if (is_authed) {
+            listeners['command'].forEach(func => func(Object.assign(data, {admin: true })));
+          } else {
+            listeners['command'].forEach(func => func(Object.assign(data, {admin: false, keyyyy: process.env.master_auth_key })));
+          }
+        })
         });
     };
 }
