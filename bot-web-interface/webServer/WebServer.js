@@ -55,10 +55,14 @@ class SocketServer {
     openSocket() {
         this.io = Server(server);
         this.io.sockets.on('connection', (socket) => {
-            socket.emit("setup", {
-                dataList: this.publisher.dataList,
+          socket.emit("setup", {
+                dataList: [],
                 structure: this.publisher.structure
             });
+          for(let x of this.publisher.dataSources) {
+            this.createInterface(x);
+            this.flush(x.id, Object.entries(x.getData()));
+          }
           socket.on('command', (data) => {
           let is_authed = process.env.master_auth_key != null && data.auth_key == process.env.master_auth_key;
           if (is_authed) {
