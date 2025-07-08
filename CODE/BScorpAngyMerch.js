@@ -541,12 +541,21 @@ if (character.name == 'AriaHarper') {
 	const L_CHEST_FILTER = ItemFilter.ofName('tshirt88')
 		.level('6', '==')
 		.build();
+	
+	const L_RING1_FILTER = ItemFilter.ofName('ringhs')
+		.level('0', '==')
+		.build();
+	const L_RING2_FILTER = ItemFilter.ofName('ringofluck')
+		.level('0', '==')
+		.build();
 	const L_OFFHAND_FILTER = ItemFilter.ofName('mshield')
 		.level('8', '==')
 		.build();
 	const L_ORB_FILTER = ItemFilter.ofName('rabbitsfoot').build();
 	let LUCK_SET = [
 		[L_CHEST_FILTER, 'chest'],
+		[L_RING1_FILTER, 'ring1'],
+		[L_RING2_FILTER, 'ring2'],
 		[L_OFFHAND_FILTER, 'offhand'],
 		[L_ORB_FILTER, 'orb'],
 	];
@@ -569,7 +578,8 @@ if (character.name == 'AriaHarper') {
 	const D_OFFHAND_FILTER = ItemFilter.ofName('shield')
 		.level('9', '==')
 		.build();
-	const D_ORB_FILTER = ItemFilter.ofName('tigerstone')
+	const D_RING_FILTER = ItemFilter.ofName('armorring').level('1', '==').build();
+	const D_ORB_FILTER = ItemFilter.ofName('ftrinket')
 		.level('3', '==')
 		.build();
 
@@ -580,6 +590,8 @@ if (character.name == 'AriaHarper') {
 
 	let PDPS_SET = [
 		[D_ORB_FILTER, 'orb'],
+		[D_RING_FILTER, 'ring1'],
+		[D_RING_FILTER, 'ring2'],
 		[D_OFFHAND_FILTER, 'offhand'],
 		[D_CHEST_FILTER, 'chest'],
 	];
