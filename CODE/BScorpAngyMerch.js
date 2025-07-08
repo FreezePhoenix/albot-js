@@ -138,17 +138,7 @@ function increment_destroyed() {
 
 restock({
 	sell: {
-			offeringp: [1500000, 100, -1, EntityPresenceFilter(
-        "MerchanDiser",
-        "WongMerchant",
-        "MerchantMooh",
-        "earthMer",
-        "Diocles",
-        "MuaBan",
-        "idkhtcmerch",
-        "Jewel",
-        "CrownMerch"
-      ), true],
+			offeringp: [1500000, 100, -1],
 			t2quiver: [30000000, 1, 0],
 	},
 	buy: {
