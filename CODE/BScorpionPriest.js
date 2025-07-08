@@ -292,6 +292,7 @@ const ensure_equipped_batch = async (filters_and_slots) => {
 		if (!item_filter(character.slots[slot])) {
 			const index = character.items.findIndex(item_filter);
 			if (index == -1) {
+        			log(JSON.stringify(item_filter.looking))
 				log('Failed while looking for an item.');
 				break;
 			}
