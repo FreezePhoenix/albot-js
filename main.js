@@ -11,6 +11,9 @@ const {
 	workerData,
 } = require('worker_threads');
 
+const util = require('node:util');
+const exec = util.promisify(require('node:child_process').exec);
+
 let child_process = require('child_process'),
 	HttpWrapper = require('./HttpWrapper'),
 	httpWrapper = new HttpWrapper(),
@@ -248,7 +251,7 @@ function shutdown_all(exit_self = true) {
   }
 }
 
-BotWebInterface.SocketServer.on("command", (data) => {
+BotWebInterface.SocketServer.on("command", async (data) => {
 	if(data.admin) {
 		if(data.command == "toggle_merch") {
 			shutdown_all(false);
@@ -259,6 +262,11 @@ BotWebInterface.SocketServer.on("command", (data) => {
 			shutdown_all(false);
 			BotWebInterface.SocketServer.getPublisher().removeInterfaces();
 			userData.toggleAll();
+			main();
+		} else if(data.command == "pull") {
+			shutdown_all(false);
+			let result = await exec("git pull");
+			console.log(JSON.stringify(result));
 			main();
 		}
 	}
