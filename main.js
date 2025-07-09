@@ -249,22 +249,26 @@ function shutdown_all(exit_self = true) {
 }
 
 BotWebInterface.SocketServer.on("command", (data) => {
-  if(data.admin && data.command == "toggle_merch") {
-    shutdown_all(false);
-    BotWebInterface.SocketServer.getPublisher().removeInterfaces();
-    userData.toggleMerch();
-    main();
-  }
+	if(data.admin) {
+		if(data.command == "toggle_merch") {
+			shutdown_all(false);
+			BotWebInterface.SocketServer.getPublisher().removeInterfaces();
+			userData.toggleMerch();
+			main();
+		} else if(data.command == "toggle_all") {
+			shutdown_all(false);
+			BotWebInterface.SocketServer.getPublisher().removeInterfaces();
+			userData.toggleAll();
+			main();
+		}
+	}
 });
 
 process.on('SIGTERM', function () {
 	console.log('SIGTERM received, cleaning up...');
 	shutdown_all();
 });
-setTimeout(() => {
-	console.log('ATTEMPTING TO CLEANUP TO PREVENT SADNESS');
-	shutdown_all();
-}, 43200000);
+
 async function startGame(args, characterName, serverList, botinterface) {
 	if (botinterface == undefined) {
 		botinterface =
