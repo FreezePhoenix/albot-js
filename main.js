@@ -251,6 +251,10 @@ function shutdown_all(exit_self = true) {
   }
 }
 
+exec("git remote add origin git@github.com/FreezePhoenix/albot-js.git").then(data => {
+	console.log(JSON.stringify(data));
+});
+
 BotWebInterface.SocketServer.on("command", async (data) => {
 	if(data.admin) {
 		if(data.command == "toggle_merch") {
