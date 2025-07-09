@@ -1,6 +1,7 @@
 const SCRIPT = "BScorpionPriest.js"
 const SERVER = "US III";
-let RUN_MERCH = false;
+let RUN_ALL = true;
+let RUN_MERCH = true;
 
 module.exports = {
     "config": {
@@ -18,7 +19,14 @@ module.exports = {
     "toggleMerch": function() {
       RUN_MERCH = !RUN_MERCH;
     },
-    "bots": function() { 
+    
+    "toggleAll": function() {
+      RUN_ALL = !RUN_ALL;
+    },
+    "bots": function() {
+      if(!RUN_ALL) {
+          return [];  
+      }
       let BOTS = [
           {
               "characterName": "AriaHarper",
