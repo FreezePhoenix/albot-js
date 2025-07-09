@@ -265,9 +265,10 @@ BotWebInterface.SocketServer.on("command", async (data) => {
 			main();
 		} else if(data.command == "pull") {
 			shutdown_all(false);
-			let result = await exec("git status");
+			BotWebInterface.SocketServer.getPublisher().removeInterfaces();
+			let result = await exec("git checkout main");
 			console.log(JSON.stringify(result));
-			let result2 = await exec("git branch");
+			let result2 = await exec("git pull origin main");
 			console.log(JSON.stringify(result2));
 			main();
 		}
