@@ -549,7 +549,7 @@ if (character.name == 'AriaHarper') {
 		.level('0', '==')
 		.build();
 	const L_OFFHAND_FILTER = ItemFilter.ofName('mshield')
-		.level('8', '==')
+		.level('9', '==')
 		.build();
 	const L_ORB_FILTER = ItemFilter.ofName('rabbitsfoot').build();
 	let LUCK_SET = [
