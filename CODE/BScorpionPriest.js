@@ -782,7 +782,7 @@ if (character.name == 'Geoffriel') {
 		}
 	}, 250);
 	// DPS filters
-	const D_HELMET_FILTER = ItemFilter.ofName('helmet')
+	const D_HELMET_FILTER = ItemFilter.ofName('eears')
 		.level('13', '==')
 		.build();
 	const D_EARRING_FILTER = ItemFilter.ofName('cearring')
