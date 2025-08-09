@@ -241,7 +241,6 @@ let to_send = new Set([
 	'mcape',
 	'firestaff',
 	'fireblade',
-	'armorbox',
 	'weaponbox',
 	'gem1',
 	'cupid',
