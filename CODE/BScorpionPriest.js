@@ -17,7 +17,7 @@ const {
 	'ItemFilter.js'
 );
 
-Exchange('mistletoe', 1, 1);
+Exchange('armorbox', 1, 1);
 // Exchange('candycane', 1, 1);
 
 const sleep = (ms, value) => new Promise((r) => setTimeout(r, ms, value));
@@ -125,6 +125,11 @@ let to_sell = new Set([
 	'rednose',
 ]);
 let to_destroy = new Set([
+	'pants1',
+	'helmet1',
+	'coat1',
+	'shoes1',
+	'gloves1',
 	'snowflakes',
 	'warmscarf',
 	'candycanesword',
@@ -149,6 +154,11 @@ let to_destroy = new Set([
 	'harbringer',
 ]);
 let to_send = new Set([
+	'xarmor',
+	'xboots',
+	'xpants',
+	'xhelmet',
+	'xgloves',
   "scroll3",
   "mearring",
 	'mshield',
