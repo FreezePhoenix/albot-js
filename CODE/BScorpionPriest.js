@@ -113,6 +113,7 @@ let to_sell = new Set([
 	'smoke',
 	'hhelmet',
 	'harmor',
+	'hgloves',
 	'hpants',
 	'hboots',
 	'lantern',
