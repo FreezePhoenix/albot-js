@@ -18,7 +18,7 @@ const {
 );
 
 Exchange('armorbox', 1, 1);
-// Exchange('candycane', 1, 1);
+Exchange('candycane', 1, 1);
 
 const sleep = (ms, value) => new Promise((r) => setTimeout(r, ms, value));
 
@@ -163,7 +163,6 @@ let to_send = new Set([
   "scroll3",
   "mearring",
 	'mshield',
-	'candycane',
 	'cscroll3',
 	'offering',
 	'supermittens',
