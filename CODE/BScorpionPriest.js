@@ -155,6 +155,7 @@ let to_destroy = new Set([
 	'harbringer',
 ]);
 let to_send = new Set([
+	'candycane',
 	'xarmor',
 	'xboots',
 	'xpants',
