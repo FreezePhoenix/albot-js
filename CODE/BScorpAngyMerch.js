@@ -146,22 +146,6 @@ restock({
   },
 });
 
-parent.socket.on("entities", (data) => {
-    if(character.slots.trade1 != null || character.slots.trade2 != null) {
-        for(let i = 0; i < data.players.length; i++) {
-            if(data.players[i].id == "Plutus") {
-                parent.socket.emit("unequip", {
-                    slot: "trade1"
-                });
-                parent.socket.emit("unequip", {
-                    slot: "trade2"
-                });
-                break;
-            }
-        }
-    }
-});
-
 const ROD_FILTER = ItemFilter.ofName('rod').build();
 const LUCK_FILTER = ItemFilter.ofName('elixirluck').build();
 const PUMPKIN_FILTER = ItemFilter.ofName('pumpkinspice').build();
