@@ -72,7 +72,7 @@ class HttpWrapper extends DataWrapper {
 	login(email, password) {
 		console.log('Logging in.');
 		var self = this;
-		return new Promise(async function (resolve, reject) {
+		return new Promise(async (resolve, reject) => {
 			try {
 				await request({ url: 'http://adventure.land' });
 			} catch (err) {
@@ -95,7 +95,7 @@ class HttpWrapper extends DataWrapper {
 							Accept: 'application/json, text/javascript, */*; q=0.01',
 						},
 					},
-					function (err, response, html) {
+					(err, response, html) => {
 						var data = JSON.parse(html);
 						var loginSuccessful = false;
 						for (let i = 0; i < data.length; i++) {
@@ -130,12 +130,15 @@ class HttpWrapper extends DataWrapper {
 									self.userId = match[1].split('-')[0];
 								}
 							}
+							resolve(loginSuccessful);
 						} else {
 							console.log(':(');
 							console.log(data);
-							process.exit(0);
+							console.log("Retrying in 10 seconds");
+							setTImeout(async () => {
+								resolve(await this.login(email, password))
+							}, 10000);
 						}
-						resolve(loginSuccessful);
 					}
 				);
 			} catch (e) {
