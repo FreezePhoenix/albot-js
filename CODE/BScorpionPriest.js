@@ -484,7 +484,7 @@ setInterval(async () => {
 					send_item(merchant, i, item.q ?? 1);
 				} else if (
 					to_send.has(item.name) &&
-					(item.level == 0 || item.level == null)
+					(item.level == 0 || item.level == null) && item.l == null
 				) {
 					send_item(merchant, i, item.q ?? 1);
 				}
