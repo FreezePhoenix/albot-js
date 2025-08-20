@@ -810,7 +810,7 @@ if (character.name == 'Geoffriel') {
 		.level('8', '==')
 		.build();
 	const D_PANTS_FILTER = ItemFilter.ofName('pants').level('13', '==').build();
-	const D_RING2_FILTER = ItemFilter.ofName('cring').level('4', '==').build();
+	const D_RING2_FILTER = ItemFilter.ofName('cring').level('5', '==').build();
 	const D_ORB_FILTER = ItemFilter.ofName('jacko').level('5', '==').build();
 	const D_GLOVE_FILTER = ItemFilter.ofName('gloves')
 		.level('13', '==')
