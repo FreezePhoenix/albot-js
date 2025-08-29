@@ -819,7 +819,7 @@ if (character.name == 'Geoffriel') {
 		.level('5', '==')
 		.build();
 	const D_BOOTS_FILTER = ItemFilter.ofName('wingedboots')
-		.level('10', '==')
+		.level('11', '==')
 		.build();
 
 	// GOLD filters
