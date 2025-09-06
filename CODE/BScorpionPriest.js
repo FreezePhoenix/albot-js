@@ -17,6 +17,7 @@ const {
 	'ItemFilter.js'
 );
 
+Exchange('basketofeggs', 1, 1);
 Exchange('armorbox', 1, 1);
 Exchange('candycane', 1, 1);
 
@@ -153,8 +154,15 @@ let to_destroy = new Set([
 	'gphelmet',
 	'oozingterror',
 	'harbringer',
+	'ecape',
+	'eears',
+	'epyjamas',
+	'eslippers',
+	'carrotsword',
+	'pinkie',
 ]);
 let to_send = new Set([
+	'bataxe',
 	'xarmor',
 	'xboots',
 	'xpants',
@@ -176,13 +184,6 @@ let to_send = new Set([
 	'tshirt4',
 	'tshirt3',
 	'bunnyelixir',
-	'ecape',
-	'eears',
-	'epyjamas',
-	'eslippers',
-	'carrotsword',
-	'bataxe',
-	'pinkie',
 	'rabbitsfoot',
 	'molesteeth',
 	'gemfragment',
