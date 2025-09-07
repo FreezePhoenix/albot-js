@@ -1042,7 +1042,7 @@ async function farm(location) {
 						warcry();
 					}
 					try {
-						if (can_use('attack', NOW)) {
+						if ((character.name == "Rael" ? attack_target.hp / attack_target.max_hp > 0.02 : true) && can_use('attack', NOW)) {
 							let r = Promise.race([
 								attack(attack_target, true),
 								sleep(character.ping * 4),
