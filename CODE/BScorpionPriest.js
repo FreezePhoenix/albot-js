@@ -937,7 +937,7 @@ let SUGAR_SET = [
 	[SUGAR_FILTER, 'offhand'],
 ];
 let SUGAR_LESSER_SET = [
-	[SUGAR_FILTER, 'offhand'],
+	[SUGAR_FILTER, 'mainhand'],
 	[PIERCE_FILTER, 'chest'],
 ];
 let DPS_SET = [
