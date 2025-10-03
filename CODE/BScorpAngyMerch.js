@@ -84,6 +84,7 @@ if (character.name == 'AriaHarper') {
 	setInterval(() => {
 		if (
 			state == 'farm' &&
+			parent.entities["Geoffriel"] == null &&
 			character.map == 'desertland' &&
 			distance_to_point(kiting_origin.x, kiting_origin.y) < 200
 		) {
@@ -424,10 +425,14 @@ let NOW = performance.now();
 
 const LOOP = async () => {
 	while (true) {
-		NOW = performance.now();
-        await farm();
-		NOW = performance.now();
-        await sleep(Math.max(100, Math.ceil(ms_until('attack', NOW))));
+		if(parent.entities["Geoffriel"] == null) {
+			NOW = performance.now();
+	        await farm();
+			NOW = performance.now();
+	        await sleep(Math.max(100, Math.ceil(ms_until('attack', NOW))));
+		} else {
+			await sleep(10000);
+		}
 	}
 };
 
