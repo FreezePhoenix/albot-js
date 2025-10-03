@@ -32,7 +32,7 @@ module.exports = {
               "characterName": "AriaHarper",
               "characterId": "5513766260178944",
               "runScript": "BScorpAngyMerch.js",
-              "server": "US II"
+              "server": "US III"
           }, // */
           {
               "characterName": "Rael",
@@ -50,7 +50,7 @@ module.exports = {
               "characterName": "Raelina",
               "characterId": "5931316711784448",
               "runScript": SCRIPT,
-              "server": RUN_MERCH ? "US II" : SERVER
+              "server": SERVER
           }, // */
           /* {
               "characterName": "Anony",
