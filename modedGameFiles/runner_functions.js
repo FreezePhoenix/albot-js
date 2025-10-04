@@ -564,6 +564,9 @@ var smart = {
   flags: {},
 };
 
+parent.socket.on('new_map', (c) => {
+	parent.transporting = false;
+});
 function smart_move(a, b) {
   if (character) {
     smart.map = "";
