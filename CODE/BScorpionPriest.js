@@ -127,6 +127,8 @@ let to_sell = new Set([
 	'rednose',
 ]);
 let to_destroy = new Set([
+	'ololipop',
+	'glolipop',
 	'pants1',
 	'helmet1',
 	'coat1',
