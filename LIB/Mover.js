@@ -183,6 +183,11 @@ class Mover {
     this.smart.try_exact_spot = true;
     this.smart.moving = true;
     let promise = parent.push_deferred("Mover.move");
+	this.smart.on_fail = async (data, on_end) => {
+		await this.move_by_path(data);
+      	callback?.(true);
+      	parent.resolve_deferred("Mover.move", true);
+	};
     this.smart.on_done = () => {
       callback?.(true);
       parent.resolve_deferred("Mover.move", true);
