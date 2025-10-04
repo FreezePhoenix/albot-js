@@ -875,6 +875,7 @@ function smart_move_logic() {
 		else
 		{
 			game_log("Lost the path...","#CF5B5B");
+			game_log(`Should be: ${current.map}, ${current.x}, ${current.y}, but found: ${character.map}, ${character.real_x}, ${character.real_y}`)
 			if(smart.on_fail) {
 				smart.on_fail({map:smart.map,x:smart.x,y:smart.y}, smart.on_done);
 			} else {
