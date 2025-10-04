@@ -1047,27 +1047,25 @@ async function farm(location) {
 								attack(attack_target, true),
 								sleep(character.ping * 4),
 							]);
-							if(attack_target.mtype == "bscorpion") {
-								if (character.s.sugarrush == null) {
-									if (
-										can_use('cleave', NOW) &&
-										character.mp > 1200 &&
-										attack_target.mtype == 'bscorpion'
-									) {
-										parent.socket.emit('unequip', {
-											slot: 'offhand',
-										});
-										ensure_equipped_batch([
-											[AXE_FILTER, 'mainhand'],
-										]);
-										use_skill('cleave');
-									}
-									if (distance_from_target > 0) {
-										ensure_equipped_batch(SUGAR_SET);
-									}
-								} else {
-									ensure_equipped_batch(SUGAR_LESSER_SET);
+							if (character.s.sugarrush == null) {
+								if (
+									can_use('cleave', NOW) &&
+									character.mp > 1200 &&
+									attack_target.mtype == 'bscorpion'
+								) {
+									parent.socket.emit('unequip', {
+										slot: 'offhand',
+									});
+									ensure_equipped_batch([
+										[AXE_FILTER, 'mainhand'],
+									]);
+									use_skill('cleave');
 								}
+								if (distance_from_target > 0) {
+									ensure_equipped_batch(SUGAR_SET);
+								}
+							} else {
+								ensure_equipped_batch(SUGAR_LESSER_SET);
 							}
 
 							if ((await r) == undefined) {
