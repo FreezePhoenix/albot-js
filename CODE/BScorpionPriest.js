@@ -1044,11 +1044,11 @@ async function farm(location) {
 						warcry();
 					}
 					try {
-						if (can_use('attack', NOW) && (character.name == "Rael" ? true : !Targeter.WillDieFromFire(attack_target))) {
-							if(character.name == "Rael" && Targeter.WillDieFromFire(attack_target) && attack_target.s.burned.fid == "Rael") {
-								await sleep(100);
-								return;
-							}
+						if (can_use('attack', NOW)) {
+							// if(character.name == "Rael" && Targeter.WillDieFromFire(attack_target) && attack_target.s.burned.fid == "Rael") {
+							// 	await sleep(100);
+							// 	return;
+							// }
 							let r = Promise.race([
 								attack(attack_target, true),
 								sleep(character.ping * 4),
