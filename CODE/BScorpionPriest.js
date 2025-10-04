@@ -1042,7 +1042,7 @@ async function farm(location) {
 						warcry();
 					}
 					try {
-						if (can_use('attack', NOW)) {
+						if (can_use('attack', NOW) && !Targeter.WillDieFromFire(attack_target)) {
 							let r = Promise.race([
 								attack(attack_target, true),
 								sleep(character.ping * 4),
@@ -1075,6 +1075,8 @@ async function farm(location) {
 								ensure_equipped_batch(DPS_SET);
 								parent.resolve_deferred('attack', undefined);
 							}
+						} else if(Targeter.WillDieFromFire(attack_target)) {
+							await sleep(100);
 						}
 					} catch (e) {
 						switch (e.reason) {
