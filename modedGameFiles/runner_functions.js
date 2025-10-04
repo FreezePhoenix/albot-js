@@ -875,7 +875,11 @@ function smart_move_logic() {
 		else
 		{
 			game_log("Lost the path...","#CF5B5B");
-			smart_move({map:smart.map,x:smart.x,y:smart.y},smart.on_done);
+			if(smart.on_fail) {
+				smart.on_fail({map:smart.map,x:smart.x,y:smart.y}, smart.on_done);
+			} else {
+				smart_move({map:smart.map,x:smart.x,y:smart.y},smart.on_done);
+			}
 		}
 	}
 }
