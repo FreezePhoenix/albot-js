@@ -865,6 +865,7 @@ function smart_move_logic() {
 		{
 			parent.socket.emit("transport",{to:current.map,s:current.s});
 			parent.push_deferred("transport")
+			parent.transporting = true;
 			// use("transporter",current.map);
 		}
 		else if(character.map==current.map && (smart.try_exact_spot && !smart.plot.length || can_move_to(current.x,current.y))) 
