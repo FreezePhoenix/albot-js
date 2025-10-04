@@ -1181,7 +1181,14 @@ let OFFSET = 0;
 function next_event(curEvent) {
 	let data = parent.socket.server_data ?? {};
 	if (curEvent == null) {
-		if (data.mrpumpkin?.live) {
+		if (data.mrgreen?.live) {
+			return {
+				x: (data.mrgreen.x ?? 0) + OFFSET,
+				y: (data.mrgreen.y ?? 0) + OFFSET,
+				name: 'mrgreen',
+				map: data.mrgreen.map,
+			};
+		} else if (data.mrpumpkin?.live) {
 			return {
 				x: (data.mrpumpkin.x ?? 0) + OFFSET,
 				y: (data.mrpumpkin.y ?? 0) + OFFSET,
