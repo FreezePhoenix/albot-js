@@ -1047,26 +1047,27 @@ async function farm(location) {
 								attack(attack_target, true),
 								sleep(character.ping * 4),
 							]);
-
-							if (character.s.sugarrush == null) {
-								if (
-									can_use('cleave', NOW) &&
-									character.mp > 1200 &&
-									attack_target.mtype == 'bscorpion'
-								) {
-									parent.socket.emit('unequip', {
-										slot: 'offhand',
-									});
-									ensure_equipped_batch([
-										[AXE_FILTER, 'mainhand'],
-									]);
-									use_skill('cleave');
+							if(attack_target.mtype == "bscorpion") {
+								if (character.s.sugarrush == null) {
+									if (
+										can_use('cleave', NOW) &&
+										character.mp > 1200 &&
+										attack_target.mtype == 'bscorpion'
+									) {
+										parent.socket.emit('unequip', {
+											slot: 'offhand',
+										});
+										ensure_equipped_batch([
+											[AXE_FILTER, 'mainhand'],
+										]);
+										use_skill('cleave');
+									}
+									if (distance_from_target > 0) {
+										ensure_equipped_batch(SUGAR_SET);
+									}
+								} else {
+									ensure_equipped_batch(SUGAR_LESSER_SET);
 								}
-								if (distance_from_target > 0) {
-									ensure_equipped_batch(SUGAR_SET);
-								}
-							} else {
-								ensure_equipped_batch(SUGAR_LESSER_SET);
 							}
 
 							if ((await r) == undefined) {
@@ -1179,9 +1180,15 @@ var targeter = new Targeter(monster_targets, [...to_party, ...group], {
 let OFFSET = 0;
 function next_event(curEvent) {
 	let data = parent.socket.server_data ?? {};
-	return null;
 	if (curEvent == null) {
-		if (data.goobrawl) {
+		if (data.mrpumpkin?.live) {
+			return {
+				x: (data.mrpumpkin.x ?? 0) + OFFSET,
+				y: (data.mrpumpkin.y ?? 0) + OFFSET,
+				name: 'mrpumpkin',
+				map: data.mrpumpkin.map,
+			};
+		} else if (data.goobrawl) {
 			if (character.map != 'goobrawl') {
 				parent.socket.emit('join', {
 					name: 'goobrawl',
