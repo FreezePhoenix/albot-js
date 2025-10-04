@@ -244,6 +244,7 @@ const whitelist = [
 	'strbelt',
 	'intbelt',
 	'dexbelt',
+	'dexamulet',
 	'intamulet',
 	'stramulet',
 	'ecape',
