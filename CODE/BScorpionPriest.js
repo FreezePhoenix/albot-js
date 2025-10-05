@@ -271,6 +271,7 @@ let to_send = new Set([
 	'sshield',
 	'woodensword',
 	'candy0',
+	'candy1',
 	'ascale',
 	'pleather',
 	'leather',
