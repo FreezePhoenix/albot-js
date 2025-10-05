@@ -170,6 +170,7 @@ let to_destroy = new Set([
 	'pinkie',
 ]);
 let to_send = new Set([
+	'hdagger',
 	'bataxe',
 	'xarmor',
 	'xboots',
