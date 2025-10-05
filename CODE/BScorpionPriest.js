@@ -1194,7 +1194,7 @@ function next_event(curEvent) {
 				name: 'mrgreen',
 				map: data.mrgreen.map,
 			};
-		} else if (data.mrpumpkin?.live && .mrpumpkin?.target) {
+		} else if (data.mrpumpkin?.live && data.mrpumpkin?.target) {
 			return {
 				x: (data.mrpumpkin.x ?? 0) + OFFSET,
 				y: (data.mrpumpkin.y ?? 0) + OFFSET,
