@@ -1188,7 +1188,6 @@ var targeter = new Targeter(monster_targets, [...to_party, ...group], {
 });
 let OFFSET = 0;
 function next_event(curEvent) {
-	return null;
 	let data = parent.socket.server_data ?? {};
 	if (curEvent == null) {
 		if (data.mrgreen?.live && data.mrgreen?.target) {
