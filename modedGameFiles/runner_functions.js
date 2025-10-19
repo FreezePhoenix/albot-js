@@ -867,7 +867,9 @@ function smart_move_logic() {
 		else if(current.transport)
 		{
 			parent.socket.emit("transport",{to:current.map,s:current.s});
-			parent.push_deferred("transport")
+			parent.push_deferred("transport").finally(() => {
+				parent.transporting = false;
+			});
 			parent.transporting = true;
 			// use("transporter",current.map);
 		}
