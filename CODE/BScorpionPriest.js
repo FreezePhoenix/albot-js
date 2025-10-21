@@ -914,14 +914,15 @@ if (character.name == 'Geoffriel') {
 		NON_LUCK_ORB.push([ItemFilter.ofName("suckerpunch").build(), "ring2"]);
 	}
 	setInterval(() => {
-		let mtarget = character.target;
-		if (mtarget && parent.entities[mtarget]) {
-			let etarget = parent.entities[mtarget];
-			if (
-				etarget.hp / etarget.max_hp < 0.05 &&
-				(etarget.mtype == 'mrpumpkin' || etarget.mtype == 'mrgreen')
-			) {
-				ensure_equipped_batch(LUCK_SET);
+		for(let x in parent.entities) {
+			let etarget = parent.entities[x];
+			if(etarget) {
+				if (
+					etarget.hp / etarget.max_hp < 0.05 &&
+					(etarget.mtype == 'mrpumpkin' || etarget.mtype == 'mrgreen')
+				) {
+					ensure_equipped_batch(LUCK_SET);
+				}
 			}
 		}
 	}, 250);
