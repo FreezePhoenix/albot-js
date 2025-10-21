@@ -907,6 +907,12 @@ if (character.name == 'Geoffriel') {
 	let NON_LUCK_ORB = [
 		[DPS_ORB_FILTER, 'orb'] 
 	];
+	if(character.name == "Rael") {
+		LUCK_SET.push([ItemFilter.ofName("ringofluck").build(), "ring1"]);
+		LUCK_SET.push([ItemFilter.ofName("ringhs").build(), "ring2"]);
+		NON_LUCK_ORB.push([ItemFilter.ofName("suckerpunch").build(), "ring1"]);
+		NON_LUCK_ORB.push([ItemFilter.ofName("suckerpunch").build(), "ring2"]);
+	}
 	setInterval(() => {
 		let mtarget = character.target;
 		if (mtarget && parent.entities[mtarget]) {
