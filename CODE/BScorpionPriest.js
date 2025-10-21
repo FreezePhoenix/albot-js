@@ -621,6 +621,25 @@ setTimeout(async () => {
 }, 100);
 
 if (character.ctype == 'warrior') {
+	
+	const L_ORB_FILTER = ItemFilter.ofName('rabbitsfoot').build();
+	const DPS_ORB_FILTER = ItemFilter.ofName("orbofstr").build();
+	let LUCK_SET = [
+		[L_ORB_FILTER, 'orb']
+	];
+	let NON_LUCK_ORB = [
+		[DPS_ORB_FILTER, 'orb'] 
+	];
+	if(character.name == "Rael") {
+		LUCK_SET.push([ItemFilter.ofName("ringofluck").build(), "ring1"]);
+		LUCK_SET.push([ItemFilter.ofName("ringhs").build(), "ring2"]);
+		NON_LUCK_ORB.push([ItemFilter.ofName("suckerpunch").build(), "ring1"]);
+		NON_LUCK_ORB.push([ItemFilter.ofName("suckerpunch").build(), "ring2"]);
+	}
+	
+	parent.socket.on('drop', (data) => {
+		ensure_equipped_batch(NON_LUCK_ORB);
+	});
 	const JACKO_FILTER = ItemFilter.ofName('jacko').build();
 	const ORB_FILTER = new ItemFilter()
 		.level('4', '>=')
@@ -660,7 +679,24 @@ if (character.ctype == 'warrior') {
 				await ensure_equipped(ORB_FILTER, 'orb');
 			}
 		} else {
-			await ensure_equipped(ORB_FILTER, 'orb');
+
+			let found = false;
+			for(let x in parent.entities) {
+				let etarget = parent.entities[x];
+				if(etarget) {
+					if (
+						etarget.hp / etarget.max_hp < 0.05 &&
+						(etarget.mtype == 'mrpumpkin' || etarget.mtype == 'mrgreen')
+					) {
+						found = true;
+						ensure_equipped_batch(LUCK_SET);
+						break;
+					}
+				}
+			}
+			if(!found) {
+				await ensure_equipped(ORB_FILTER, 'orb');
+			}
 		}
 	}, 1000);
 } else {
@@ -897,38 +933,6 @@ if (character.name == 'Geoffriel') {
 			LOOT_CHEST(id);
 			RESET_GEAR();
 		}
-	});
-} else {
-	const L_ORB_FILTER = ItemFilter.ofName('rabbitsfoot').build();
-	const DPS_ORB_FILTER = ItemFilter.ofName("orbofstr").build();
-	let LUCK_SET = [
-		[L_ORB_FILTER, 'orb']
-	];
-	let NON_LUCK_ORB = [
-		[DPS_ORB_FILTER, 'orb'] 
-	];
-	if(character.name == "Rael") {
-		LUCK_SET.push([ItemFilter.ofName("ringofluck").build(), "ring1"]);
-		LUCK_SET.push([ItemFilter.ofName("ringhs").build(), "ring2"]);
-		NON_LUCK_ORB.push([ItemFilter.ofName("suckerpunch").build(), "ring1"]);
-		NON_LUCK_ORB.push([ItemFilter.ofName("suckerpunch").build(), "ring2"]);
-	}
-	setInterval(() => {
-		for(let x in parent.entities) {
-			let etarget = parent.entities[x];
-			if(etarget) {
-				if (
-					etarget.hp / etarget.max_hp < 0.05 &&
-					(etarget.mtype == 'mrpumpkin' || etarget.mtype == 'mrgreen')
-				) {
-					ensure_equipped_batch(LUCK_SET);
-				}
-			}
-		}
-	}, 250);
-	
-	parent.socket.on('drop', (data) => {
-		ensure_equipped_batch(NON_LUCK_ORB);
 	});
 }
 
