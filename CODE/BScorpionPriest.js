@@ -898,6 +898,31 @@ if (character.name == 'Geoffriel') {
 			RESET_GEAR();
 		}
 	});
+} else {
+	const L_ORB_FILTER = ItemFilter.ofName('rabbitsfoot').build();
+	const DPS_ORB_FILTER = ItemFilter.ofName("orbofstr").build();
+	let LUCK_SET = [
+		[L_ORB_FILTER, 'orb']
+	];
+	let NON_LUCK_ORB = [
+		[DPS_ORB_FILTER, 'orb'] 
+	];
+	setInterval(() => {
+		let mtarget = character.target;
+		if (mtarget && parent.entities[mtarget]) {
+			let etarget = parent.entities[mtarget];
+			if (
+				etarget.hp / etarget.max_hp < 0.05 &&
+				(etarget.mtype == 'mrpumpkin' || etarget.mtype == 'mrgreen')
+			) {
+				ensure_equipped_batch(LUCK_SET);
+			}
+		}
+	}, 250);
+	
+	parent.socket.on('drop', (data) => {
+		ensure_equipped_batch(NON_LUCK_ORB);
+	});
 }
 
 let NOW = performance.now();
