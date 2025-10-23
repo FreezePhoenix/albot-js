@@ -772,7 +772,10 @@ const NEEDS_PRIEST = new Lazy([...to_party, 'AriaHarper'])
 
 const afflicted = (status_name, entity = character) => status_name in entity.s;
 
+const DEBUFF_HP_CHEST = ItemFilter.ofName('coat').level('13', '==').build();
 const D_RING1_FILTER = ItemFilter.ofName('zapper').build();
+const D_CHEST_FILTER = ItemFilter.ofName('vattire').level('9', '==').build();
+
 if (character.name == 'Geoffriel') {
 	// LUCK FILTERS
 	const L_HELMET_FILTER = ItemFilter.ofName('wcap').level('8', '==').build();
@@ -844,7 +847,6 @@ if (character.name == 'Geoffriel') {
 		.build();
 	const H_STAFF_FILTER = ItemFilter.ofName('lmace').level('9', '==').build();
 	const D_STAFF_FILTER = ItemFilter.ofName('lmace').level('9', '==').build();
-	const D_CHEST_FILTER = ItemFilter.ofName('vattire').level('9', '==').build();
 	const D_OFFHAND_FILTER = ItemFilter.ofName('wbookhs')
 		.level('3', '==')
 		.build();
@@ -863,7 +865,6 @@ if (character.name == 'Geoffriel') {
 	const D_BOOTS_FILTER = ItemFilter.ofName('wingedboots')
 		.level('11', '==')
 		.build();
-
 	// GOLD filters
 	const BOOSTER_FILTER = new ItemFilter()
 		.names('xpbooster', 'luckbooster', 'goldbooster')
@@ -904,10 +905,10 @@ if (character.name == 'Geoffriel') {
 		[G_GLOVE_FILTER, 'gloves'],
 	];
 	const RESET_GEAR = async () => {
-    let booster_index = character.items.findIndex(BOOSTER_FILTER);
-    if(booster_index != -1) {
-		  shift(character.items.findIndex(BOOSTER_FILTER), 'luckbooster');
-    }
+	    let booster_index = character.items.findIndex(BOOSTER_FILTER);
+	    if(booster_index != -1) {
+			  shift(character.items.findIndex(BOOSTER_FILTER), 'luckbooster');
+	    }
 		ensure_equipped_batch(PDPS_SET);
 	};
 	const LOOT_CHEST = (id) => {
@@ -1075,7 +1076,17 @@ async function farm(location) {
 						absorb(attack_target.target);
 					}
 					if (can_use('attack', NOW)) {
-						attack(attack_target);
+						if(curEvent != null) {
+							if(character.s.coop == null) {
+								attack(attack_target);
+							} else {
+								heal(character);
+								ensure_equipped(DEBUFF_HP_CHEST, 'chest');
+								ensure_equipped(D_CHEST_FILTER, 'chest');
+							}
+						} else {
+							attack(attack_target);
+						}
 					}
 					break;
 				case 'warrior':
