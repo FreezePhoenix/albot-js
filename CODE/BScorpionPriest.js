@@ -844,7 +844,7 @@ if (character.name == 'Geoffriel') {
 		.build();
 	const H_STAFF_FILTER = ItemFilter.ofName('lmace').level('9', '==').build();
 	const D_STAFF_FILTER = ItemFilter.ofName('lmace').level('9', '==').build();
-	const D_CHEST_FILTER = ItemFilter.ofName('coat').level('13', '==').build();
+	const D_CHEST_FILTER = ItemFilter.ofName('vattire').level('9', '==').build();
 	const D_OFFHAND_FILTER = ItemFilter.ofName('wbookhs')
 		.level('3', '==')
 		.build();
