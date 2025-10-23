@@ -775,6 +775,7 @@ const afflicted = (status_name, entity = character) => status_name in entity.s;
 const DEBUFF_HP_CHEST = ItemFilter.ofName('coat').level('13', '==').build();
 const D_RING1_FILTER = ItemFilter.ofName('zapper').build();
 const D_CHEST_FILTER = ItemFilter.ofName('vattire').level('9', '==').build();
+let USING_LUCK = false;
 
 if (character.name == 'Geoffriel') {
 	// LUCK FILTERS
@@ -786,9 +787,6 @@ if (character.name == 'Geoffriel') {
 		.level('4', '==')
 		.property('lucky')
 		.build();
-	const L_CHEST_FILTER = ItemFilter.ofName('wattire')
-		.level('6', '==')
-		.build();
 	const L_OFFHAND_FILTER = ItemFilter.ofName('mshield')
 		.level('9', '==')
 		.build();
@@ -799,6 +797,7 @@ if (character.name == 'Geoffriel') {
 	const L_PANTS_FILTER = ItemFilter.ofName('wbreeches')
 		.level('6', '==')
 		.build();
+	const L_CHEST_FILTER = ItemFilter.ofName('wattire').level('6', '==').build();
 	const L_RING_FILTER = ItemFilter.ofName('ringhs').build();
 	const L_ORB_FILTER = ItemFilter.ofName('rabbitsfoot').build();
 	const L_BELT_FILTER = ItemFilter.ofName('santasbelt').level('3', '==').build();
@@ -824,6 +823,7 @@ if (character.name == 'Geoffriel') {
 		[L_BELT_FILTER, 'belt']
 	];
 	setInterval(() => {
+		USING_LUCK = false;
 		let mtarget = character.target;
 		if (mtarget && parent.entities[mtarget]) {
 			let etarget = parent.entities[mtarget];
@@ -831,6 +831,10 @@ if (character.name == 'Geoffriel') {
 				etarget.hp / etarget.max_hp < 0.2 &&
 				etarget.mtype == 'bscorpion'
 			) {
+				USING_LUCK = true;
+				ensure_equipped_batch(LUCK_SET);
+			} else if(etarget.hp / etarget.max_hp < 0.05 && (etarget.mtype == "mrpumpkin" || etarget.mtype == "mrgreen")) {
+				USING_LUCK = true;
 				ensure_equipped_batch(LUCK_SET);
 			}
 		}
@@ -1077,7 +1081,7 @@ async function farm(location) {
 					}
 					if (can_use('attack', NOW)) {
 						if(curEvent != null) {
-							if(character.s.coop == null) {
+							if(character.s.coop == null || USING_LUCK) {
 								attack(attack_target);
 							} else {
 								heal(character);
