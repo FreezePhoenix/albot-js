@@ -824,18 +824,19 @@ if (character.name == 'Geoffriel') {
 	];
 	setInterval(() => {
 		USING_LUCK = false;
-		let mtarget = character.target;
-		if (mtarget && parent.entities[mtarget]) {
-			let etarget = parent.entities[mtarget];
+		for(let x in parent.entities) {
+			let etarget = parent.entities[x];
 			if (
 				etarget.hp / etarget.max_hp < 0.2 &&
 				etarget.mtype == 'bscorpion'
 			) {
 				USING_LUCK = true;
 				ensure_equipped_batch(LUCK_SET);
+				break;
 			} else if(etarget.hp / etarget.max_hp < 0.05 && (etarget.mtype == "mrpumpkin" || etarget.mtype == "mrgreen")) {
 				USING_LUCK = true;
 				ensure_equipped_batch(LUCK_SET);
+				break;
 			}
 		}
 	}, 250);
@@ -1084,8 +1085,8 @@ async function farm(location) {
 							if(character.s.coop == null || USING_LUCK) {
 								attack(attack_target);
 							} else {
-								heal(character);
 								ensure_equipped_batch([[DEBUFF_HP_CHEST, 'chest']]);
+								heal(character);
 								ensure_equipped_batch([[D_CHEST_FILTER, 'chest']]);
 							}
 						} else {
