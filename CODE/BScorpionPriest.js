@@ -1081,8 +1081,8 @@ async function farm(location) {
 								attack(attack_target);
 							} else {
 								heal(character);
-								ensure_equipped(DEBUFF_HP_CHEST, 'chest');
-								ensure_equipped(D_CHEST_FILTER, 'chest');
+								ensure_equipped_batch([[DEBUFF_HP_CHEST, 'chest']]);
+								ensure_equipped_batch([[D_CHEST_FILTER, 'chest']]);
 							}
 						} else {
 							attack(attack_target);
