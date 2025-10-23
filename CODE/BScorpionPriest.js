@@ -1085,9 +1085,9 @@ async function farm(location) {
 							if(character.s.coop == null || USING_LUCK) {
 								attack(attack_target);
 							} else {
-								ensure_equipped_batch([[DEBUFF_HP_CHEST, 'chest']]);
-								heal(character);
 								ensure_equipped_batch([[D_CHEST_FILTER, 'chest']]);
+								heal(character);
+								ensure_equipped_batch([[DEBUFF_HP_CHEST, 'chest']]);
 							}
 						} else {
 							attack(attack_target);
