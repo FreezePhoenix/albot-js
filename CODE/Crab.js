@@ -1,5 +1,4 @@
 const sleep = (ms, value) => new Promise((r) => setTimeout(r, ms, value));
-let monster_targets = ['bscorpion'];
 const {
     restock,
     Mover,
@@ -94,7 +93,7 @@ let LOOKUP = {
     ASIAI: "US III",
 };
 
-var targeter = new Targeter(['frog'], [character.name], {
+var targeter = new Targeter(['frog', 'squigtoad'], [character.name], {
     RequireLOS: false,
     TagTargets: true,
     Solo: false,
