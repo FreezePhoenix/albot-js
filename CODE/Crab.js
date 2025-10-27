@@ -93,7 +93,7 @@ let LOOKUP = {
     ASIAI: "US III",
 };
 
-var targeter = new Targeter(['frog', 'squigtoad'], [character.name], {
+var targeter = new Targeter(['frog'], [character.name], {
     RequireLOS: false,
     TagTargets: true,
     Solo: false,
