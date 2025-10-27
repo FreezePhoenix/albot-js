@@ -209,6 +209,90 @@ async function use_hp() {
         }
     }
 }
+const whitelist = [
+	// "spookyamulet",
+	'hpamulet',
+	'wbook0',
+	'hpbelt',
+	'gloves1',
+	'smoke',
+	'intring',
+	'dexring',
+	'strring',
+	'vitring',
+	'pants1',
+	'coat1',
+	'shoes1',
+	'helmet1',
+	'ringsj',
+	'cclaw',
+	'snowball',
+	'smoke',
+	'strbelt',
+	'intbelt',
+	'dexbelt',
+	'dexamulet',
+	'intamulet',
+	'stramulet',
+	'ecape',
+	'lantern',
+	'eslippers',
+	'epyjamas',
+	'eears',
+	'smoke',
+	'skullamulet',
+	// "pinkie",
+	'xmassweater',
+	'carrotsword',
+	'xmasshoes',
+	'mittens',
+	'merry',
+	'rednose',
+	'warmscarf',
+	'xmaspants',
+	'xmashat',
+	'ornamentstaff',
+	'candycanesword',
+];
+
+let destroy = [
+	'broom',
+	'wshoes',
+	'gphelmet',
+	'wattire',
+	'throwingstars',
+	'wcap',
+	'phelmet',
+	'wgloves',
+	'wbreeches',
+	'tshirt2',
+	'tshirt0',
+	'tshirt1',
+	// "tshirt3",
+	// "tshirt4"
+];
+
+setInterval(() => {
+	for (let i = 0, len = character.isize; i < len; i++) {
+		let item = character.items[i];
+		if (
+			destroy.includes(item?.name) &&
+			(item?.level ?? 0) < 1 &&
+			!item?.p
+		) {
+			parent.socket.emit('destroy', { num: i, q: 1, statue: true });
+			continue;
+		}
+		if (
+			whitelist.includes(item?.name) &&
+			(item?.level ?? 0) < 1 &&
+			!item?.p
+		) {
+			sell(i);
+		}
+	}
+}, 5000);
+
 
 setTimeout(async () => {
     while (true) {
@@ -235,5 +319,5 @@ setInterval(async () => {
     if (num_items('hpot1') < 8000) {
         buy('hpot1', 1000);
     }
-});
+}, 1000);
 LOOP();
