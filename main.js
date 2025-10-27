@@ -318,6 +318,8 @@ async function startGame(args, characterName, serverList, botinterface) {
 				botinterface.pushData(m.data.name, m.data.value);
 			}
 		} else if (m.action == 'server') {
+			worker.terminate();
+			closed = true;
 			let serverInfo = await httpWrapper.getServerInfo(m.data);
 			if (serverInfo == null) {
 				console.log(`Server not found: ${m.data}`);
@@ -326,6 +328,7 @@ async function startGame(args, characterName, serverList, botinterface) {
 
 			args[3] = ip;
 			args[4] = port;
+			startGame(args, characterName, serverList, botinterface);
 		} else if (m.event == 'cm') {
 			m.names.forEach((name) => {
 				if (processes.has(name)) {
