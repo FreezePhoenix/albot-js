@@ -72,7 +72,7 @@ let NOW = performance.now();
 
 let FARM_LOCATION = {
     x: -1124,
-    y: -1118,
+    y: 1118,
     map: 'main',
 };
 
