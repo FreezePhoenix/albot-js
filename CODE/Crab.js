@@ -27,6 +27,12 @@ function distance_to_point(x, y) {
 	return Math.hypot(character.real_x - x, character.real_y - y);
 }
 
+parent.socket.on('drop', (data) => {
+	parent.socket.emit('open_chest', {
+		id: data.id,
+	});
+});
+
 let moving = false;
 
 function move_to(location, callback) {
