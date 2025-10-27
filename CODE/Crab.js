@@ -108,7 +108,7 @@ async function farm() {
     if (attack_target != null) {
         let distance_from_target = distance(attack_target, character);
         if (distance_from_target < character.range) {
-            if (attack_target.hp > 1) {
+            if (attack_target.hp > 1 && attack_target.mtype == "frog") { // We need to kill frogs with throw.
                 // We need to use throw.
                 let shield_index = -1;
                 for (let i = 0; i < character.items.length; i++) {
