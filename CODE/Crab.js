@@ -21,6 +21,17 @@ const {
   'EntityPresenceFilter.js'
 );
 
+const timeout = async (promise, timeout) => {
+	let TIMEOUT_HANDLE;
+	let TIMEOUT_PROMISE = new Promise((_, r) => {
+		TIMEOUT_HANDLE = setTimeout(r, timeout);
+	});
+	promise.then(() => {
+		clearTimeout(TIMEOUT_HANDLE);
+	});
+	return await Promise.race([TIMEOUT_PROMISE, promise]);
+};
+
 Mover.init(smart, G, smart_move);
 
 function distance_to_point(x, y) {
