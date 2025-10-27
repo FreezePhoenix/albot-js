@@ -130,3 +130,5 @@ async function farm() {
 	}
 	await sleep(10);
 }
+
+LOOP();
