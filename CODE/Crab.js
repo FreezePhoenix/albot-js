@@ -131,4 +131,76 @@ async function farm() {
 	await sleep(10);
 }
 
+
+function num_items(name) {
+	let item_count = 0;
+	if (typeof name == 'function') {
+		for (let i = 0; i < character.isize; i++) {
+			let item = character.items[i];
+			item_count += name(item) ? item.q ?? 1 : 0;
+		}
+	} else {
+		for (let i = 0; i < character.isize; i++) {
+			let item = character.items[i];
+			item_count += item?.name === name ? item.q ?? 1 : 0;
+		}
+	}
+
+	return item_count;
+}
+
+async function use_mp() {
+	for (let i = 0; i < character.isize; i++) {
+		if (character.items[i]?.name == 'mpot1') {
+			try {
+				await timeout(equip(i), character.ping * 4);
+			} catch (e) {
+				log('Potion equip promise seems to have been dropped...' + e);
+				parent.resolve_deferred('equip', undefined);
+			}
+			break;
+		}
+	}
+}
+
+async function use_hp() {
+	for (let i = 0; i < character.isize; i++) {
+		if (character.items[i]?.name == 'hpot1') {
+			try {
+				await timeout(equip(i), character.ping * 4);
+			} catch (e) {
+				log('Potion equip promise seems to have been dropped...' + e);
+				parent.resolve_deferred('equip', undefined);
+			}
+			break;
+		}
+	}
+}
+
+setTimeout(async () => {
+	while (true) {
+		try {
+			if (character.mp < character.max_mp - 500) {
+				await use_mp();
+				await sleep(2000);
+				continue;
+			} else if (character.hp / character.max_hp < 0.5) {
+				await use_hp();
+				await sleep(2000);
+				continue;
+			}
+		} finally {
+			await sleep(100);
+		}
+	}
+}, 100);
+
+setInterval(async () => {
+	if (num_items('mpot1') < 8000) {
+		buy('mpot1', 1000);
+	}
+	if (num_items('hpot1') < 8000) {
+		buy('hpot1', 1000);
+	}
+});
 LOOP();
