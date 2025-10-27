@@ -262,10 +262,6 @@ Game.prototype.init = async function () {
 			action: 'server',
 			data: server,
 		});
-		glob.socket.emit('say', {
-			message: `Switching servers!`,
-			code: 0,
-		});
 		parentPort.postMessage({
 			type: 'status',
 			status: 'disconnected'
@@ -275,10 +271,6 @@ Game.prototype.init = async function () {
 		parentPort.postMessage({
 			event: 'script_switch',
 			value: script,
-		});
-		glob.socket.emit('say', {
-			message: `Switching scripts!`,
-			code: 0,
 		});
 		parentPort.postMessage({
 			type: 'status',
