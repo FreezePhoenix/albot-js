@@ -1,0 +1,126 @@
+
+const sleep = (ms, value) => new Promise((r) => setTimeout(r, ms, value));
+let monster_targets = ['bscorpion'];
+const {
+	restock,
+	Mover,
+	Exchange,
+	Dismantle,
+	ItemFilter,
+	Adapter,
+	Targeter,
+  EntityPresenceFilter
+} = await proxied_require(
+	'Mover.js',
+	'Exchange.js',
+	'Dismantle.js',
+	'restock.js',
+	'Targeter.js',
+	'ItemFilter.js',
+	'Adapter.js',
+  'EntityPresenceFilter.js'
+);
+
+Mover.init(smart, G, smart_move);
+
+function distance_to_point(x, y) {
+	return Math.hypot(character.real_x - x, character.real_y - y);
+}
+
+let moving = false;
+
+function move_to(location, callback) {
+	if (
+		can_move_to(location.x, location.y) &&
+		distance_to_point(location.x, location.y) > 1 &&
+		character.map == location.map
+	) {
+		move(location.x, location.y);
+	} else if (!moving && distance_to_point(location.x, location.y) > 2) {
+		moving = true;
+		Mover.move_by_path(location, () => {
+			moving = false;
+		});
+	}
+	if (
+		character.map == location.map &&
+		distance_to_point(location.x, location.y) < 1
+	) {
+		callback?.();
+	}
+}
+
+let NOW = performance.now();
+
+
+let FARM_LOCATION = {
+    x: -1124,
+    y: -1118,
+    map: 'main',
+};
+
+const LOOP = async () => {
+	while (true) {
+			NOW = performance.now();
+      await farm();
+			NOW = performance.now();
+      await sleep(1000);
+	}
+};
+
+
+let LOOKUP = {
+  USIII: "US II",
+  USII: "US I",
+  USI: "EU II",
+  EUII: "EU I",
+  EUI: "ASIA I",
+  ASIAI: "US III",
+};
+
+var targeter = new Targeter(['frog'], [character.name], {
+	RequireLOS: false,
+	TagTargets: true,
+	Solo: false,
+});
+
+function find_viable_target() {
+  return targeter.GetPriorityTarget(1, true, /* ignore_fire */ true);
+}
+
+async function farm() {
+	let attack_target = find_viable_target();
+	if (attack_target != null) {
+		let distance_from_target = distance(attack_target, character);
+		if (distance_from_target < character.range) {
+			if(attack_target.hp > 1) {
+        // We need to use throw.
+        let shield_index = -1;
+        for(let i = 0; i < character.items.length; i++) {
+          if(character.items[i] != null && character.items[i].name == "wshield") {
+            shield_index = i;
+            break;
+          }
+        }
+        if(shield_index != -1) {
+          parent.socket.emit("skill",{name:"throw",num:shield_index,id:attack_target.id});
+        } else {
+          buy("wshield");
+        }
+      } else if (can_use('attack', NOW)) {
+        attack(attack_target);
+      }
+		} else {
+      move_to(attack_target);
+    }
+	} else {
+    if(character.map != FARM_LOCATION.map || distance_to_point(FARM_LOCATION.x, FARM_LOCATION.y) > 100) {
+		  move_to(FARM_LOCATION);
+    } else {
+    	let SERVER_ID = parent.server_region + parent.server_identifier;
+      parent.switch_server(LOOKUP[SERVER_ID]);
+      await sleep(10000);
+    }
+	}
+	await sleep(10);
+}
