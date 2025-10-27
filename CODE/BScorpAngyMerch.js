@@ -1,3 +1,6 @@
+// Temporarily...
+parent.switch_script("crab");
+
 let merchant = 'AriaHarper';
 const sleep = (ms, value) => new Promise((r) => setTimeout(r, ms, value));
 let monster_targets = ['bscorpion'],
