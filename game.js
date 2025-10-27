@@ -268,10 +268,6 @@ Game.prototype.init = async function () {
 		});
 		self.emit('disconnected', 'nothing');
 		self.stop();
-		parentPort.postMessage({
-			type: 'status',
-			status: 'disconnected',
-		});
 	};
 	glob.switch_script = function (script) {
 		parentPort.postMessage({
@@ -284,10 +280,6 @@ Game.prototype.init = async function () {
 		});
 		self.emit('disconnected', 'nothing');
 		self.stop();
-		parentPort.postMessage({
-			type: 'status',
-			status: 'disconnected',
-		});
 	};
 	Object.defineProperty(glob, 'entities', {
 		get: function () {
