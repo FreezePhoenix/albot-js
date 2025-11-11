@@ -319,4 +319,5 @@ setInterval(async () => {
         buy('hpot1', 1000);
     }
 }, 1000);
-LOOP();
+
+setTimeout(LOOP, 3000);
