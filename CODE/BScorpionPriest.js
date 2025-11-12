@@ -21,6 +21,7 @@ Exchange('basketofeggs', 1, 1);
 Exchange('armorbox', 1, 1);
 Exchange('candycane', 1, 1);
 
+const DISABLE_EVENTS = true;
 const sleep = (ms, value) => new Promise((r) => setTimeout(r, ms, value));
 
 const timeout = async (promise, timeout) => {
@@ -1240,6 +1241,9 @@ var targeter = new Targeter(monster_targets, [...to_party, ...group], {
 });
 let OFFSET = 0;
 function next_event(curEvent) {
+	if(DISABLE_EVENTS) {
+		return null;
+	}
 	let data = parent.socket.server_data ?? {};
 	if (curEvent == null) {
 		if (data.mrgreen?.live && data.mrgreen?.target) {
