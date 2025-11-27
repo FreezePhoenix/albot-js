@@ -255,6 +255,16 @@ exec("git remote add origin https://github.com/FreezePhoenix/albot-js.git").then
 	console.log(JSON.stringify(data));
 });
 
+async function PULL() {
+	shutdown_all(false);
+	BotWebInterface.SocketServer.getPublisher().removeInterfaces();
+	let result = await exec("git checkout main");
+	console.log(JSON.stringify(result));
+	let result2 = await exec("git pull origin main");
+	console.log(JSON.stringify(result2));
+	main();
+}
+
 BotWebInterface.SocketServer.on("command", async (data) => {
 	if(data.admin) {
 		if(data.command == "toggle_merch") {
@@ -268,13 +278,7 @@ BotWebInterface.SocketServer.on("command", async (data) => {
 			userData.toggleAll();
 			main();
 		} else if(data.command == "pull") {
-			shutdown_all(false);
-			BotWebInterface.SocketServer.getPublisher().removeInterfaces();
-			let result = await exec("git checkout main");
-			console.log(JSON.stringify(result));
-			let result2 = await exec("git pull origin main");
-			console.log(JSON.stringify(result2));
-			main();
+			PULL()
 		}
 	}
 });
@@ -412,4 +416,4 @@ const sleep = async (ms) => {
 	});
 };
 
-main();
+PULL();
