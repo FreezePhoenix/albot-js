@@ -19,6 +19,13 @@ const {
     'EntityPresenceFilter.js'
 );
 
+restock({
+	sell: {
+			offeringp: [2500000, 500],
+	},
+	buy: {},
+});
+
 const timeout = async (promise, timeout) => {
     let TIMEOUT_HANDLE;
     let TIMEOUT_PROMISE = new Promise((_, r) => {
