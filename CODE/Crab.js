@@ -2,21 +2,11 @@ const sleep = (ms, value) => new Promise((r) => setTimeout(r, ms, value));
 const {
     restock,
     Mover,
-    Exchange,
-    Dismantle,
-    ItemFilter,
-    Adapter,
-    Targeter,
-    EntityPresenceFilter
+    Targeter
 } = await proxied_require(
     'Mover.js',
-    'Exchange.js',
-    'Dismantle.js',
     'restock.js',
     'Targeter.js',
-    'ItemFilter.js',
-    'Adapter.js',
-    'EntityPresenceFilter.js'
 );
 
 restock({
@@ -131,8 +121,7 @@ async function farm() {
                         id: attack_target.id
                     });
                 } else {
-                    buy("wshield");
-					await sleep(300);
+                    await buy("wshield");
 					for (let i = 0; i < character.items.length; i++) {
 	                    if (character.items[i] != null && character.items[i].name == "wshield") {
 	                        shield_index = i;
@@ -259,18 +248,18 @@ const whitelist = [
 	'xmashat',
 	'ornamentstaff',
 	'candycanesword',
+	'wshoes',
+	'wattire',
+	'wcap',
+	'wgloves',
+	'wbreeches',
 ];
 
 let destroy = [
 	'broom',
-	'wshoes',
 	'gphelmet',
-	'wattire',
 	'throwingstars',
-	'wcap',
 	'phelmet',
-	'wgloves',
-	'wbreeches',
 	'tshirt2',
 	'tshirt0',
 	'tshirt1',
