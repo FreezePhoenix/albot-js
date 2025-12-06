@@ -1,11 +1,9 @@
 const sleep = (ms, value) => new Promise((r) => setTimeout(r, ms, value));
 const {
-    restock,
     Mover,
     Targeter
 } = await proxied_require(
     'Mover.js',
-    'restock.js',
     'Targeter.js',
 );
 
@@ -115,7 +113,7 @@ var targeter = new Targeter(['tortoise'], [character.name], {
 });
 
 function find_viable_target() {
-    return targeter.GetPriorityTarget(1, true, /* ignore_fire */ true);
+    return targeter.GetPriorityTarget(1, false, /* ignore_fire */ true);
 }
 
 async function farm() {
