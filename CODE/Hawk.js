@@ -106,7 +106,7 @@ const LOOP = async () => {
     }
 };
 
-var targeter = new Targeter(['squigtoad', 'tortoise'], [character.name], {
+var targeter = new Targeter(['tortoise'], [character.name], {
     RequireLOS: false,
     TagTargets: true,
     Solo: false,
