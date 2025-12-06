@@ -113,7 +113,7 @@ var targeter = new Targeter(['tortoise'], [character.name], {
 });
 
 function find_viable_target() {
-    return targeter.GetPriorityTarget(1, false, /* ignore_fire */ true);
+    return targeter.GetPriorityTarget(1, false, /* ignore_fire */ true)[0];
 }
 
 async function farm() {
