@@ -17,9 +17,7 @@ const {
 	'ItemFilter.js'
 );
 
-Exchange('basketofeggs', 1, 1);
-Exchange('armorbox', 1, 1);
-Exchange('candycane', 1, 1);
+Exchange('candy1', 1, 1);
 
 const DISABLE_EVENTS = true;
 const sleep = (ms, value) => new Promise((r) => setTimeout(r, ms, value));
@@ -273,7 +271,6 @@ let to_send = new Set([
 	'sshield',
 	'woodensword',
 	'candy0',
-	'candy1',
 	'ascale',
 	'pleather',
 	'leather',
@@ -462,16 +459,7 @@ setInterval(async () => {
 	for (let i = 0; i < character.items.length; i++) {
 		let item = character.items[i];
 		if (item != null && (item.level == 0 || item.level == null)) {
-			if (to_destroy.has(item.name) && item.p == null) {
-				log(`destroyed ${item.name}`);
-				parent.socket.emit('destroy', {
-					num: i,
-					q: 1,
-					statue: true,
-				});
-				character.items[i] = null;
-				increment_destroyed();
-			} else if (to_sell.has(item.name) && item.p == null) {
+			if ((to_destroy.has(item.name) || to_sell.has(item.name)) && item.p == null) {
 				sell(i, item.q ?? 1);
 				character.items[i] = null;
 			}
