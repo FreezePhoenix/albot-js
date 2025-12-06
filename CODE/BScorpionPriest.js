@@ -22,8 +22,6 @@ const {
 	'ItemFilter.js'
 );
 
-Exchange('candy1', 1, 1);
-
 const DISABLE_EVENTS = true;
 const sleep = (ms, value) => new Promise((r) => setTimeout(r, ms, value));
 
@@ -107,6 +105,7 @@ let mana = 'mpot1',
 // /*
 // */
 let to_sell = new Set([
+	'shield',
 	'intamulet',
 	'dexamulet',
 	'stramulet',
