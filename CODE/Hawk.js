@@ -61,10 +61,43 @@ let NOW = performance.now();
 
 
 let FARM_LOCATION = {
-    x: -1124,
-    y: 1118,
-    map: 'main',
-};
+	    x: -1124,
+	    y: 1118,
+	    map: 'main',
+	},
+	to_party = ['Rael', 'Raelina', 'Geoffriel'],
+	party_leader = character.name == 'Raelina' ? 'AriaHarper' : 'Geoffriel',
+	merchant = 'AriaHarper';
+
+setInterval(() => {
+	if (character.name === party_leader) {
+		for (let i = 1; i < to_party.length; i++) {
+			const name = to_party[i];
+			if (!(name in parent.party)) {
+				send_party_invite(name);
+			}
+		}
+	} else {
+		if (character.party) {
+		} else {
+			send_party_request(party_leader);
+		}
+	}
+}, 1000 * 1);
+
+parent.socket.on('request', ({ name }) => {
+	console.log('Party Request');
+	if (to_party.indexOf(name) != -1 && name != merchant) {
+		accept_party_request(name);
+	}
+});
+
+parent.socket.on('invite', ({ name }) => {
+	console.log('Party Invite', name);
+	if (to_party.indexOf(name) != -1 || name == party_leader) {
+		accept_party_invite(name);
+	}
+});
 
 const LOOP = async () => {
     while (true) {
