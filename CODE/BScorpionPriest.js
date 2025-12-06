@@ -134,6 +134,7 @@ let to_sell = new Set([
 	'eggnog',
 	'snowball',
 	'rednose',
+	'wshoes',
 ]);
 let to_destroy = new Set([
 	'ololipop',
@@ -213,7 +214,6 @@ let to_send = new Set([
 	'orbofdex',
 	'essenceoffire',
 	'networkcard',
-	'wshoes',
 	'glitch',
 	'svenom',
 	'offeringp',
