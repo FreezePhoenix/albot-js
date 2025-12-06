@@ -1,3 +1,8 @@
+
+if(character.name == "Raelina") {
+	parent.switch_script("hawk");
+}
+
 const {
 	Lazy,
 	Adapter,
