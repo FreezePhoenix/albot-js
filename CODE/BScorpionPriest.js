@@ -174,6 +174,10 @@ let to_destroy = new Set([
 	'pinkie',
 ]);
 let to_send = new Set([
+	'bcandle',
+	'pstem',
+	'mistletoe',
+	'candycane',
 	'fallen',
 	'hdagger',
 	'bataxe',
