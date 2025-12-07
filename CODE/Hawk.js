@@ -64,7 +64,7 @@ let FARM_LOCATION = {
 	    map: 'main',
 	},
 	to_party = ['Rael', 'Raelina', 'Geoffriel'],
-	party_leader = character.name == 'Raelina' ? 'AriaHarper' : 'Geoffriel',
+	party_leader = 'Geoffriel',
 	merchant = 'AriaHarper';
 
 setInterval(() => {
