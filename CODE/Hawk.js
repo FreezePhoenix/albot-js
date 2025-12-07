@@ -6,7 +6,7 @@ const {
     'Mover.js',
     'Targeter.js',
 );
-
+let EARTH = ["earthPri", "earthRan3", "earthRog3"];
 const timeout = async (promise, timeout) => {
     let TIMEOUT_HANDLE;
     let TIMEOUT_PROMISE = new Promise((_, r) => {
@@ -76,26 +76,28 @@ setInterval(() => {
 			}
 		}
 	} else {
+		let EARTH_NEARBY = false;
+		for(let i = 0; i < EARTH.length; i++) {
+			if(EARTH[i] in parent.entities) {
+				EARTH_NEARBY = EARTH[i];
+				break;
+			}
+		}
 		if (character.party) {
+			if(EARTH_NEARBY && !character.party.startsWith("earth")) {
+				
+				parent.socket.emit("party",{event:"leave"});
+				send_party_request(EARTH_NEARBY);
+			}
 		} else {
-			send_party_request(party_leader);
+			if(EARTH_NEARBY) {
+				send_party_request(EARTH_NEARBY);
+			} else {
+				send_party_request(party_leader);
+			}
 		}
 	}
 }, 1000 * 1);
-
-parent.socket.on('request', ({ name }) => {
-	console.log('Party Request');
-	if (to_party.indexOf(name) != -1 && name != merchant) {
-		accept_party_request(name);
-	}
-});
-
-parent.socket.on('invite', ({ name }) => {
-	console.log('Party Invite', name);
-	if (to_party.indexOf(name) != -1 || name == party_leader) {
-		accept_party_invite(name);
-	}
-});
 
 const LOOP = async () => {
     while (true) {
