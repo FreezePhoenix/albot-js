@@ -25,7 +25,7 @@ function distance_to_point(x, y) {
 }
 
 parent.socket.on('drop', (data) => {
-	if(data.map == "main") {
+	if(data.map == "level3") {
 	    parent.socket.emit('open_chest', {
 	        id: data.id,
 	    });
