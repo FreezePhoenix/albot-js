@@ -123,6 +123,9 @@ async function farm() {
     if (attack_target != null) {
         let distance_from_target = distance(attack_target, character);
         if (distance_from_target < character.range) {
+			if(can_use('hardshell', NOW)) {
+				use_skill('hardshell');
+			}
             if (can_use('attack', NOW)) {
                 attack(attack_target);
             }
