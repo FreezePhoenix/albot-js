@@ -59,9 +59,9 @@ let NOW = performance.now();
 
 
 let FARM_LOCATION = {
-	    x: -1124,
-	    y: 1118,
-	    map: 'main',
+	    x: 265.48,
+	    y: -212.915,
+	    map: 'level3',
 	},
 	to_party = ['Rael', 'Raelina', 'Geoffriel'],
 	party_leader = 'Geoffriel',
@@ -108,7 +108,7 @@ const LOOP = async () => {
     }
 };
 
-var targeter = new Targeter(['tortoise'], [character.name], {
+var targeter = new Targeter(['bbpompom'], [character.name], {
     RequireLOS: false,
     TagTargets: true,
     Solo: false,
