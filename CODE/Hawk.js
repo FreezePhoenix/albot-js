@@ -183,6 +183,9 @@ async function use_hp() {
     }
 }
 const whitelist = [
+	'wbookhs',
+	'iceskates',
+	'xmace',
 	'shield',
 	// "spookyamulet",
 	'hpamulet',
