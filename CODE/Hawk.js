@@ -25,7 +25,7 @@ function distance_to_point(x, y) {
 }
 
 parent.socket.on('drop', (data) => {
-	if(data.map == "level3") {
+	if(data.map == "winterland") {
 	    parent.socket.emit('open_chest', {
 	        id: data.id,
 	    });
@@ -59,9 +59,9 @@ let NOW = performance.now();
 
 
 let FARM_LOCATION = {
-	    x: 265.48,
-	    y: -212.915,
-	    map: 'level3',
+	    x: 19.5,
+	    y: -1109,
+	    map: 'winterland',
 	},
 	to_party = ['Rael', 'Raelina', 'Geoffriel'],
 	party_leader = 'Geoffriel',
@@ -108,7 +108,7 @@ const LOOP = async () => {
     }
 };
 
-var targeter = new Targeter(['bbpompom'], [character.name], {
+var targeter = new Targeter(['boar'], [character.name], {
     RequireLOS: false,
     TagTargets: true,
     Solo: false,
