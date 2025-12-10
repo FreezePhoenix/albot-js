@@ -114,6 +114,9 @@ setInterval(() => {
 				
 				parent.socket.emit("party",{event:"leave"});
 				send_party_request(EARTH_NEARBY);
+			} else if(!EARTH_NEARBY && character.party.startsWith("earth")) {
+				parent.socket.emit("party",{event:"leave"});
+				send_party_request(party_leader);
 			}
 		} else {
 			if(EARTH_NEARBY) {
