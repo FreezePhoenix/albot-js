@@ -6,6 +6,40 @@ const {
     'Mover.js',
     'Targeter.js',
 );
+
+let FARM_TARGET = "boar";
+
+let FARM_LOCATION = {
+	    x: 19.5,
+	    y: -1109,
+	    map: 'winterland',
+	},
+	to_party = ['Rael', 'Raelina', 'Geoffriel'],
+	party_leader = 'Geoffriel',
+	merchant = 'AriaHarper';
+
+setInterval(() => {
+	if (character.skin != FARM_TARGET) {
+		let closest = null;
+		let closest_distance = Infinity;
+		for (let x in parent.entities) {
+			let mob = parent.entities[x];
+			if (mob.type != 'monster') {
+				continue;
+			}
+			let dist = distance(character, mob);
+			if (dist < closest_distance) {
+				closest = mob;
+				closest_distance = dist;
+			}
+		}
+		if (closest?.mtype == FARM_TARGET && closest_distance < 500) {
+			parent.socket.emit('blend');
+			character.skin = FARM_TARGET;
+		}
+	}
+}, 1000);
+
 let EARTH = ["earthPri", "earthRan3", "earthRog3"];
 const timeout = async (promise, timeout) => {
     let TIMEOUT_HANDLE;
@@ -25,7 +59,7 @@ function distance_to_point(x, y) {
 }
 
 parent.socket.on('drop', (data) => {
-	if(data.map == "winterland") {
+	if(data.map == FARM_LOCATION.map) {
 	    parent.socket.emit('open_chest', {
 	        id: data.id,
 	    });
@@ -58,14 +92,6 @@ function move_to(location, callback) {
 let NOW = performance.now();
 
 
-let FARM_LOCATION = {
-	    x: 19.5,
-	    y: -1109,
-	    map: 'winterland',
-	},
-	to_party = ['Rael', 'Raelina', 'Geoffriel'],
-	party_leader = 'Geoffriel',
-	merchant = 'AriaHarper';
 
 setInterval(() => {
 	if (character.name === party_leader) {
@@ -108,7 +134,7 @@ const LOOP = async () => {
     }
 };
 
-var targeter = new Targeter(['boar'], [character.name], {
+var targeter = new Targeter([FARM_TARGET], [character.name], {
     RequireLOS: false,
     TagTargets: true,
     Solo: false,
