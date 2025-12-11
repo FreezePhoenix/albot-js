@@ -508,7 +508,6 @@ parent.socket.on('cm', async function (a) {
 	let name = a.name;
 	let data = await JSON.parse(a.message);
 	// function on_cm(name, data) {
-  console.log(a);
 	if (
 		group.includes(name) ||
 		to_party.includes(name) ||
@@ -618,7 +617,6 @@ setTimeout(async () => {
 }, 100);
 
 if (character.ctype == 'warrior') {
-	
 	const L_ORB_FILTER = ItemFilter.ofName('rabbitsfoot').build();
 	const DPS_ORB_FILTER = ItemFilter.ofName("orbofstr").build();
 	let LUCK_SET = [
@@ -930,9 +928,9 @@ if (character.name == 'Geoffriel') {
 		if (distance_to_point(x, y) < 200) {
 			let index_of_booster = character.items.findIndex(BOOSTER_FILTER);
 			ensure_equipped_batch(GOLD_SET);
-      if(index_of_booster != -1) {
-			  shift(index_of_booster, 'goldbooster');
-      }
+		    if(index_of_booster != -1) {
+				shift(index_of_booster, 'goldbooster');
+			}
 			LOOT_CHEST(id);
 			RESET_GEAR();
 		}
@@ -966,7 +964,11 @@ const LOOP = async () => {
 
 setTimeout(LOOP, 100, true);
 
-let SUGAR_FILTER = ItemFilter.ofName('candycanesword').level('1', '==').build();
+let OUTSIDE_BSCORP_SPAWN = { x: -420, y: -1410, map: 'desertland', };
+let INSIDE_BSCORP_SPAWN = { x: -398, y: -1261.5, map: 'desertland', };
+const BELOW_BSCORP_SPAWN = { x: -420, y: -1100, map: 'desertland', };
+
+let SUGAR_FILTER = ItemFilter.ofName('candycanesword').level('7', '==').build();
 let PIERCE_FILTER = ItemFilter.ofName('tshirt7').level('8', '>=').build();
 let MANASTEAL_FILTER = ItemFilter.ofName('tshirt9').level('8', '>=').build();
 let FIRE_FILTER = ItemFilter.ofName('fireblade').level('10', '==').build();
@@ -975,6 +977,9 @@ let AXE_FILTER = new ItemFilter()
 	.level('7', '>=')
 	.build();
 // /*
+let PRIEST_DPS_SET = [[D_CHEST_FILTER, 'chest']];
+let PRIEST_DEBUFF_SET = [[DEBUFF_HP_CHEST, 'chest']];
+let AXE_SET = [[AXE_FILTER, 'mainhand']]
 let SUGAR_SET = [
 	[MANASTEAL_FILTER, 'chest'],
 	[SUGAR_FILTER, 'mainhand'],
@@ -1030,6 +1035,7 @@ if (character.name == 'Rael' || character.name == 'Raelina') {
 	}, 500);
 }
 let LOGGED = 0;
+let UNEQUIP_OFFHAND = {	slot: 'offhand' };
 
 async function farm(location) {
 	switch (character.ctype) {
@@ -1082,9 +1088,9 @@ async function farm(location) {
 							if(character.s.coop == null || USING_LUCK) {
 								attack(attack_target);
 							} else {
-								ensure_equipped_batch([[D_CHEST_FILTER, 'chest']]);
+								ensure_equipped_batch(PRIEST_DPS_SET);
 								heal(character);
-								ensure_equipped_batch([[DEBUFF_HP_CHEST, 'chest']]);
+								ensure_equipped_batch(PRIEST_DEBUFF_SET);
 							}
 						} else {
 							attack(attack_target);
@@ -1111,12 +1117,8 @@ async function farm(location) {
 									character.mp > 1200 &&
 									attack_target.mtype == 'bscorpion'
 								) {
-									parent.socket.emit('unequip', {
-										slot: 'offhand',
-									});
-									ensure_equipped_batch([
-										[AXE_FILTER, 'mainhand'],
-									]);
+									parent.socket.emit('unequip', UNEQUIP_OFFHAND);
+									ensure_equipped_batch(AXE_SET);
 									use_skill('cleave');
 								}
 								if (distance_from_target > 0) {
@@ -1139,12 +1141,10 @@ async function farm(location) {
 					} catch (e) {
 						switch (e.reason) {
 							case 'too_far':
-								console.error('Too far... ', JSON.stringify(e));
 								await sleep(10);
 								ensure_equipped_batch(DPS_SET);
 								break;
 							case 'cooldown':
-								console.error('TIME ', JSON.stringify(e));
 								await sleep(e.ms);
 								ensure_equipped_batch(DPS_SET);
 								return;
@@ -1163,7 +1163,6 @@ async function farm(location) {
 								ensure_equipped_batch(DPS_SET);
 								return;
 							default:
-								console.log('wtaf', e);
 								await sleep(10);
 								break;
 						}
@@ -1177,14 +1176,9 @@ async function farm(location) {
 		}
 	} else if (character.name == 'Geoffriel') {
 		// We still want to avoid flaming scorpions.
+		// Aria, there are no flaming scorpions. [12/11/2025]
 		// Move the priest outside of the spawn
-		move_to(
-			location ?? {
-				x: -420,
-				y: -1100,
-				map: 'desertland',
-			}
-		);
+		move_to(location ?? BELOW_BSCORP_SPAWN);
 	} else {
 		let priest_nearby = get_player(priest);
 		if (
@@ -1192,22 +1186,11 @@ async function farm(location) {
 			!(character.name == 'Raelina' && get_player('AriaHarper'))
 		) {
 			// Move outside the spawn, so we don't die to a random scorpion...
-			move_to(
-				location ?? {
-					x: -420,
-					y: -1410,
-					map: 'desertland',
-				}
-			);
+			// TODO: Every 10ms, we create a new object. How do you feel about this?
+			move_to(location ?? OUTSIDE_BSCORP_SPAWN);
 		} else {
 			// Move the warriors into the center of the spawn
-			move_to(
-				location ?? {
-					x: -398,
-					y: -1261.5,
-					map: 'desertland',
-				}
-			);
+			move_to(location ?? INSIDE_BSCORP_SPAWN);
 		}
 	}
 	await sleep(10);
@@ -1236,6 +1219,7 @@ var targeter = new Targeter(monster_targets, [...to_party, ...group], {
 	Solo: false,
 });
 let OFFSET = 0;
+const GOOBRAWL = { x: 0, y: 0, name: 'goobrawl', map: 'goobrawl', };
 function next_event(curEvent) {
 	if(DISABLE_EVENTS) {
 		return null;
@@ -1258,19 +1242,12 @@ function next_event(curEvent) {
 			};
 		} else if (data.goobrawl) {
 			if (character.map != 'goobrawl') {
-				parent.socket.emit('join', {
-					name: 'goobrawl',
-				});
+				parent.socket.emit('join', { name: 'goobrawl', });
 			}
-			return {
-				x: 0,
-				y: 0,
-				name: 'goobrawl',
-				map: 'goobrawl',
-			};
+			return GOOBRAWL;
 		} else if (
 			data.wabbit?.live &&
-			!afflicted('easterluck', parent.entities.Geoffriel || character)
+			!afflicted('easterluck', parent.entities.Geoffriel ?? character)
 		) {
 			return {
 				x: (data.wabbit.x ?? 0) + OFFSET,
@@ -1284,12 +1261,7 @@ function next_event(curEvent) {
 					parent.entities[x].mtype == 'rgoo' ||
 					parent.entities[x].mtype == 'bgoo'
 				) {
-					return {
-						x: 0,
-						y: 0,
-						name: 'goobrawl',
-						map: 'goobrawl',
-					};
+					return GOOBRAWL;
 				}
 			}
 		}
@@ -1299,12 +1271,7 @@ function next_event(curEvent) {
 				parent.entities[x].mtype == 'rgoo' ||
 				parent.entities[x].mtype == 'bgoo'
 			) {
-				return {
-					x: 0,
-					y: 0,
-					name: 'goobrawl',
-					map: 'goobrawl',
-				};
+				return GOOBRAWL;
 			}
 		}
 		if (data[curEvent.name]?.live) {
