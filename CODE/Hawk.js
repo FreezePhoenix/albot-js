@@ -7,16 +7,23 @@ const {
     'Targeter.js',
 );
 
-let FARM_TARGET = "boar";
+let FARM_TARGET = "ghost";
 
 let FARM_LOCATION = {
-	    x: 19.5,
-	    y: -1109,
-	    map: 'winterland',
+	    x: -405.5,
+	    y: -1642.5,
+	    map: 'halloween',
 	},
 	to_party = ['Rael', 'Raelina', 'Geoffriel'],
 	party_leader = 'Geoffriel',
 	merchant = 'AriaHarper';
+
+
+var targeter = new Targeter(['fvampire', FARM_TARGET], [character.name], {
+    RequireLOS: false,
+    TagTargets: true,
+    Solo: false,
+});
 
 setInterval(() => {
 	if (character.skin != FARM_TARGET) {
@@ -137,12 +144,6 @@ const LOOP = async () => {
     }
 };
 
-var targeter = new Targeter([FARM_TARGET], [character.name], {
-    RequireLOS: false,
-    TagTargets: true,
-    Solo: false,
-});
-
 function find_viable_target() {
     return targeter.GetPriorityTarget(1, false, /* ignore_fire */ true)[0];
 }
@@ -152,6 +153,9 @@ async function farm() {
     if (attack_target != null) {
         let distance_from_target = distance(attack_target, character);
         if (distance_from_target < character.range) {
+			if(attack_target.mtype == "fvampire" && can_use("hardshell", NOW)) {
+				use_skill("hardshell");
+			}
             if (can_use('attack', NOW)) {
                 attack(attack_target);
             }
