@@ -60,29 +60,7 @@ function damage_multiplier(defense) {
 const unpack = (elem, index, array) => {
 	array[index] = elem.entity;
 };
-const sort = (a, b) => {
-	if (a.priority > b.priority) {
-		return 1;
-	} else if (a.priority < b.priority) {
-		return -1;
-	} else if (a.targeting > b.targeting) {
-		return -1;
-	} else if (b.targeting > a.targeting) {
-		return 1;
-	} else if (b.targeting == a.targeting) {
-		if (a.distance > b.distance) {
-			return 1;
-		} else if (a.distance < b.distance) {
-			return -1;
-		}
-	} else if (a.distance > b.distance) {
-		return -1;
-	} else if (a.distance < b.distance) {
-		return 1;
-	} else {
-		return -1;
-	}
-};
+const sort = (a, b) => a.priority - b.priority || b.targetting - a.targetting || a.distance - b.distance;
 class Targeter {
 	#TargetingPriority = {
 		pinkgoo: 1,
