@@ -216,7 +216,10 @@ async function use_hp() {
     }
 }
 const whitelist = [
+	'pmace',
+	'gcape',
 	'wbookhs',
+	'sweaterhs',
 	'iceskates',
 	'xmace',
 	'shield',
