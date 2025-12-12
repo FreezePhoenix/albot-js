@@ -1,58 +1,38 @@
 const max = Math.max;
 const min = Math.min;
 if (parent.distance_sq == null) {
-	parent.distance_sq = function distance_sq(_a, _b, in_check) {
-	// https://discord.com/channels/238332476743745536/1025784763958693958
-	if (!_a || !_b) return 99999999;
-	if ("in" in _a && "in" in _b && _a.in != _b.in) return 99999999;
-	if ("map" in _a && "map" in _b && _a.map != _b.map) return 99999999;
-
-	const a_x = _a.x
-	const a_y = _a.y
-	const b_x = _b.x
-	const b_y = _b.y
-  
-	const a_w2 = _a.width / 2
-	const a_h = _a.height
-	const b_w2 = _b.width / 2
-	const b_h = _b.height
-
-	// Check if they're just 2 points
-	if(a_w2 == 0 && a_h == 0 && b_w2 == 0 && b_h == 0) {
-    let dx = a_x - b_x;
-    let dy = a_y - b_y;
-    return dx * dx + dy * dy;
-  }
-
-	// Check overlap
-	if ((a_x - a_w2) <= (b_x + b_w2)
-		&& (a_x + a_w2) >= (b_x - b_w2)
-		&& (a_y) >= (b_y - b_h) 
-		&& (a_y - a_h) <= (b_y) ) return 0
-
-	let min = 99999999;
-	let a_x1 = a_x + a_w2;
-	let a_x2 = a_x - a_w2;
-	let b_x1 = b_x + b_w2;
-	let b_x2 = b_x - b_w2;
-	let a_y1 = a_y;
-	let a_y2 = a_y - a_h;
-	let b_y1 = b_y;
-	let b_y2 = b_y - b_h;
-    let minX = Math.min(
-    	Math.abs(a_x1 - b_x1), 
-    	Math.abs(a_x1 - b_x2),
-    	Math.abs(a_x2 - b_x1), 
-    	Math.abs(a_x2 - b_x2)
-    );
-    let minY = Math.min(
-    	Math.abs(a_y1 - b_y1),
-    	Math.abs(a_y1 - b_y2),
-    	Math.abs(a_y2 - b_y1), 
-    	Math.abs(a_y2 - b_y2)
-    );
-    return minX * minX + minY * minY;
-}
+	parent.distance_sq = function distance_sq(a, b) {
+		// https://discord.com/channels/238332476743745536/1025784763958693958
+		if (!a || !b) return 99999999;
+		if ("in" in a && "in" in b && a.in != b.in) return 99999999;
+		if ("map" in a && "map" in b && a.map != b.map) return 99999999;
+	
+		const a_x = a.real_x ?? a.x;
+		const a_y = a.real_y ?? a.y;
+		const b_x = b.real_x ?? b.x;
+		const b_y = b.real_y ?? b.y;
+	
+		const aHalfWidth = (a.width ?? 0) / 2;
+		const aHeight = (a.height ?? 0);
+		const bHalfWidth = (b.width ?? 0) / 2;
+		const bHeight = (b.height ?? 0);
+	
+		// Compute bounds of each rectangle
+		const aLeft = a_x - aHalfWidth;
+		const aRight = a_x + aHalfWidth;
+		const aTop = a_y - aHeight;
+		const aBottom = a_y;
+	
+		const bLeft = b_x - bHalfWidth;
+		const bRight = b_x + bHalfWidth;
+		const bTop = b_y - bHeight;
+		const bBottom = b_y;
+	
+		const dx = Math.max(bLeft - aRight, aLeft - bRight, 0);
+		const dy = Math.max(bTop - aBottom, aTop - bBottom, 0);
+	
+		return dx * dx + dy * dy;
+	}
 }
 function damage_multiplier(defense) {
 	// [10/12/17]
