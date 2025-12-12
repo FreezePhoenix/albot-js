@@ -135,46 +135,58 @@ let to_sell = new Set([
 	'eggnog',
 	'snowball',
 	'rednose',
-	'wshoes',
 ]);
 let to_destroy = new Set([
 	'ololipop',
 	'glolipop',
+	
 	'pants1',
 	'helmet1',
 	'coat1',
 	'shoes1',
 	'gloves1',
+	
 	'snowflakes',
 	'warmscarf',
 	'candycanesword',
 	'ornamentstaff',
 	'merry',
+	
 	'xmashat',
 	'xmasshoes',
 	'xmassweater',
 	'xmaspants',
 	'mittens',
+	
 	'angelwings',
+	
 	'wattire',
 	'wcap',
+	'wshoes',
 	'wgloves',
 	'wbreeches',
+	
 	'quiver',
 	'phelmet',
 	'gcape',
 	'broom',
 	'gphelmet',
+	
 	'oozingterror',
 	'harbringer',
+	
 	'ecape',
 	'eears',
 	'epyjamas',
 	'eslippers',
+	
 	'carrotsword',
 	'pinkie',
+	'mcape',
+	'firestaff',
 ]);
 let to_send = new Set([
+	'forscroll',
 	'bcandle',
 	'pstem',
 	'mistletoe',
@@ -254,8 +266,6 @@ let to_send = new Set([
 	'x6',
 	'x7',
 	'x8',
-	'mcape',
-	'firestaff',
 	'fireblade',
 	'weaponbox',
 	'gem1',
