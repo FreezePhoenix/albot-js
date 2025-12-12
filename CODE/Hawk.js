@@ -213,6 +213,8 @@ async function use_hp() {
     }
 }
 const whitelist = [
+	'mcape',
+	'firestaff',
 	'pmace',
 	'gcape',
 	'wbookhs',
