@@ -105,6 +105,7 @@ let mana = 'mpot1',
 // /*
 // */
 let to_sell = new Set([
+	'pmace',
 	'shield',
 	'intamulet',
 	'dexamulet',
