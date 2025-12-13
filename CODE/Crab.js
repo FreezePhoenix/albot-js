@@ -1,20 +1,51 @@
 const sleep = (ms, value) => new Promise((r) => setTimeout(r, ms, value));
 const {
-    restock,
     Mover,
     Targeter
 } = await proxied_require(
     'Mover.js',
-    'restock.js',
     'Targeter.js',
 );
 
-restock({
-	sell: {
-			offeringp: [2500000, 500],
+let FARM_TARGET = "squigtoad";
+
+let FARM_LOCATION = {
+	    x: -1175.5,
+	    y: 422,
+	    map: 'main',
 	},
-	buy: {},
+	to_party = ['Rael', 'Raelina', 'Geoffriel'],
+	party_leader = 'Geoffriel',
+	merchant = 'AriaHarper';
+
+
+var targeter = new Targeter(['fvampire', FARM_TARGET], [character.name], {
+    RequireLOS: false,
+    TagTargets: true,
+    Solo: false,
 });
+
+setInterval(() => {
+	if (character.skin != FARM_TARGET) {
+		let closest = null;
+		let closest_distance = Infinity;
+		for (let x in parent.entities) {
+			let mob = parent.entities[x];
+			if (mob.type != 'monster') {
+				continue;
+			}
+			let dist = distance(character, mob);
+			if (dist < closest_distance) {
+				closest = mob;
+				closest_distance = dist;
+			}
+		}
+		if (closest?.mtype == FARM_TARGET && closest_distance < 500) {
+			parent.socket.emit('blend');
+			character.skin = FARM_TARGET;
+		}
+	}
+}, 1000);
 
 const timeout = async (promise, timeout) => {
     let TIMEOUT_HANDLE;
@@ -34,9 +65,11 @@ function distance_to_point(x, y) {
 }
 
 parent.socket.on('drop', (data) => {
-    parent.socket.emit('open_chest', {
-        id: data.id,
-    });
+	if(data.map == FARM_LOCATION.map) {
+	    parent.socket.emit('open_chest', {
+	        id: data.id,
+	    });
+	}
 });
 
 let moving = false;
@@ -65,11 +98,41 @@ function move_to(location, callback) {
 let NOW = performance.now();
 
 
-let FARM_LOCATION = {
-    x: -1124,
-    y: 1118,
-    map: 'main',
-};
+
+setInterval(() => {
+	if (character.name === party_leader) {
+		for (let i = 1; i < to_party.length; i++) {
+			const name = to_party[i];
+			if (!(name in parent.party)) {
+				send_party_invite(name);
+			}
+		}
+	} else {
+		let EARTH_NEARBY = false;
+		for(let i = 0; i < EARTH.length; i++) {
+			if(EARTH[i] in parent.entities) {
+				EARTH_NEARBY = EARTH[i];
+				break;
+			}
+		}
+		if (character.party) {
+			if(EARTH_NEARBY && !character.party.startsWith("earth")) {
+				
+				parent.socket.emit("party",{event:"leave"});
+				send_party_request(EARTH_NEARBY);
+			} else if(!EARTH_NEARBY && character.party.startsWith("earth")) {
+				parent.socket.emit("party",{event:"leave"});
+				send_party_request(party_leader);
+			}
+		} else {
+			if(EARTH_NEARBY) {
+				send_party_request(EARTH_NEARBY);
+			} else {
+				send_party_request(party_leader);
+			}
+		}
+	}
+}, 1000 * 1);
 
 const LOOP = async () => {
     while (true) {
@@ -80,24 +143,8 @@ const LOOP = async () => {
     }
 };
 
-
-let LOOKUP = {
-    USIII: "US II",
-    USII: "US I",
-    USI: "EU II",
-    EUII: "EU I",
-    EUI: "ASIA I",
-    ASIAI: "US III",
-};
-
-var targeter = new Targeter(['frog'], [character.name], {
-    RequireLOS: false,
-    TagTargets: true,
-    Solo: false,
-});
-
 function find_viable_target() {
-    return targeter.GetPriorityTarget(1, true, /* ignore_fire */ true);
+    return targeter.GetPriorityTarget(1, false, /* ignore_fire */ true, false, false, false, true)[0];
 }
 
 async function farm() {
@@ -105,43 +152,7 @@ async function farm() {
     if (attack_target != null) {
         let distance_from_target = distance(attack_target, character);
         if (distance_from_target < character.range) {
-            if (attack_target.hp > 1 && attack_target.mtype == "frog") { // We need to kill frogs with throw.
-                // We need to use throw.
-                let shield_index = -1;
-                for (let i = 0; i < character.items.length; i++) {
-                    if (character.items[i] != null && character.items[i].name == "wshield") {
-                        shield_index = i;
-                        break;
-                    }
-                }
-                if (shield_index != -1) {
-                    parent.socket.emit("skill", {
-                        name: "throw",
-                        num: shield_index,
-                        id: attack_target.id
-                    });
-                } else {
-                    await buy("wshield");
-					for (let i = 0; i < character.items.length; i++) {
-	                    if (character.items[i] != null && character.items[i].name == "wshield") {
-	                        shield_index = i;
-	                        break;
-	                    }
-	                }
-					if (shield_index != -1) {
-	                    parent.socket.emit("skill", {
-	                        name: "throw",
-	                        num: shield_index,
-	                        id: attack_target.id
-	                    });
-	                }
-                }
-            } else if (can_use('attack', NOW)) {
-				if(can_use("mfrenzy", NOW)) {
-					parent.socket.emit("skill", {
-						name: "mfrenzy"
-					});
-				}
+            if (can_use('attack', NOW)) {
                 attack(attack_target);
             }
         } else {
@@ -150,10 +161,6 @@ async function farm() {
     } else {
         if (character.map != FARM_LOCATION.map || distance_to_point(FARM_LOCATION.x, FARM_LOCATION.y) > 100) {
             move_to(FARM_LOCATION);
-        } else {
-            let SERVER_ID = parent.server_region + parent.server_identifier;
-            parent.switch_server(LOOKUP[SERVER_ID]);
-            await sleep(10000);
         }
     }
     await sleep(10);
@@ -205,6 +212,15 @@ async function use_hp() {
     }
 }
 const whitelist = [
+	'mcape',
+	'firestaff',
+	'pmace',
+	'gcape',
+	'wbookhs',
+	'sweaterhs',
+	'iceskates',
+	'xmace',
+	'shield',
 	// "spookyamulet",
 	'hpamulet',
 	'wbook0',
