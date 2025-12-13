@@ -61,6 +61,7 @@ const unpack = (elem, index, array) => {
 	array[index] = elem.entity;
 };
 const sort = (a, b) => a.priority - b.priority || b.targetting - a.targetting || a.distance - b.distance;
+const sort_id = (a, b) => a.priority - b.priority || b.entity.id - a.entity.id;
 class Targeter {
 	#TargetingPriority = {
 		pinkgoo: 1,
@@ -186,7 +187,8 @@ class Targeter {
 		ignore_fire = false,
 		event = false,
 		optimize_blast = false,
-		optimize_high = false
+		optimize_high = false,
+		sort_using_id = false,
 	) {
 		if (optimize_high) {
 			let blast_radius = 98.0 / 3.6;
@@ -274,6 +276,29 @@ class Targeter {
 			}
 			// We couldn't find any entities that match.
 			return null;
+		} else if(sort_using_id) {
+			const potentialTargets = [];
+			for (let id in parent.entities) {
+				let entity = parent.entities[id];
+				if (this.ShouldTarget(entity, event)) {
+					if (!this.#RequireLOS || can_move_to(entity.real_x, entity.real_y)) {
+						if (!ignore_fire && Targeter.WillDieFromFire(entity)) {
+							continue;
+						}
+						let targetArgs = {
+							priority: this.#TargetingPriority[entity.mtype],
+							entity: entity,
+						};
+						potentialTargets.push(targetArgs);
+					}
+				}
+			}
+
+			potentialTargets.sort(sort_id);
+
+			potentialTargets.length = Math.min(count, potentialTargets.length);
+			potentialTargets.forEach(unpack);
+			return potentialTargets;
 		} else {
 			const potentialTargets = [];
 			for (let id in parent.entities) {
