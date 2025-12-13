@@ -97,7 +97,19 @@ function move_to(location, callback) {
 
 let NOW = performance.now();
 
+parent.socket.on('request', ({ name }) => {
+	console.log('Party Request');
+	if (to_party.indexOf(name) != -1) {
+		accept_party_request(name);
+	}
+});
 
+parent.socket.on('invite', ({ name }) => {
+	console.log('Party Invite', name);
+	if (to_party.indexOf(name) != -1 || name == party_leader) {
+		accept_party_invite(name);
+	}
+});
 
 setInterval(() => {
 	if (character.name === party_leader) {
