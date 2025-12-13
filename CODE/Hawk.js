@@ -207,6 +207,9 @@ async function use_hp() {
     }
 }
 const whitelist = [
+	'hbow',
+	'pleather',
+	'frogt',
 	'mcape',
 	'firestaff',
 	'pmace',
