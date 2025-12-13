@@ -110,12 +110,6 @@ setInterval(() => {
 		}
 	} else {
 		let EARTH_NEARBY = false;
-		for(let i = 0; i < EARTH.length; i++) {
-			if(EARTH[i] in parent.entities) {
-				EARTH_NEARBY = EARTH[i];
-				break;
-			}
-		}
 		if (character.party) {
 			if(EARTH_NEARBY && !character.party.startsWith("earth")) {
 				
