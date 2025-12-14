@@ -7,12 +7,12 @@ const {
     'Targeter.js',
 );
 
-let FARM_TARGET = "stoneworm";
+let FARM_TARGET = "dryad";
 
 let FARM_LOCATION = {
-	    x: 676.5,
-	    y: 129,
-	    map: 'spookytown',
+	    x: 403,
+	    y: -347,
+	    map: 'mforest',
 	},
 	to_party = ['Rael', 'Raelina', 'Geoffriel'],
 	party_leader = 'Geoffriel',
@@ -213,6 +213,8 @@ async function use_hp() {
     }
 }
 const whitelist = [
+	'pclaw',
+	'elixirpnres',
 	'dstones',
 	'swifty',
 	'hbow',
