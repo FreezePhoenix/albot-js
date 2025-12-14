@@ -4,7 +4,7 @@ if(character.name == "Raelina") {
 }
 
 if(character.name == "Rael") {
-	parent.switch_script("dracul");
+	parent.switch_script("hawk");
 }
 if(character.name == "Geoffriel") {
 	parent.switch_script("crab");
