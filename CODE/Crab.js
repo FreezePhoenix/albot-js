@@ -218,6 +218,7 @@ async function use_hp() {
     }
 }
 const whitelist = [
+	'quiver',
 	'hbow',
 	'pleather',
 	'frogt',
