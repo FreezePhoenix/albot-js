@@ -70,6 +70,13 @@ let SUGAR_LESSER_SET = [
 	[PIERCE_FILTER, 'chest'],
 ];
 
+if (character.name == 'Rael') {
+	DPS_SET[0] = [
+		ItemFilter.ofName('fireblade').level('13', '==').build(),
+		'mainhand',
+	];
+}
+
 let FARM_LOCATION = {
 	    x: 16.5,
 	    y: 695,
