@@ -60,7 +60,7 @@ function damage_multiplier(defense) {
 const unpack = (elem, index, array) => {
 	array[index] = elem.entity;
 };
-const sort = (a, b) => a.priority - b.priority || b.targetting - a.targetting || a.distance - b.distance;
+const sort = (a, b) => a.priority - b.priority || b.targeting - a.targeting || a.distance - b.distance;
 const sort_id = (a, b) => a.priority - b.priority || b.entity.id - a.entity.id;
 class Targeter {
 	#TargetingPriority = {
