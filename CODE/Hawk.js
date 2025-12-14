@@ -205,6 +205,14 @@ setInterval(() => {
 	}
 }, 1000);
 
+setInterval(async () => {
+	if (character.ctype == 'warrior') {
+		if (!(await ensure_equipped('pumpkinspice', 'elixir'))) {
+			send_cm(merchant, 'yo, I need some pump');
+		}
+	}
+}, 500);
+
 let EARTH = ["earthPri", "earthRan3", "earthRog3"];
 const timeout = async (promise, timeout) => {
     let TIMEOUT_HANDLE;
@@ -299,6 +307,10 @@ const LOOP = async () => {
 function find_viable_target() {
     return targeter.GetPriorityTarget(1, false, /* ignore_fire */ true)[0];
 }
+
+setInterval(() => 
+	parent.ping();
+}, 500);
 
 async function farm() {
     let attack_target = find_viable_target();
