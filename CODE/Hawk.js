@@ -1,13 +1,71 @@
 const sleep = (ms, value) => new Promise((r) => setTimeout(r, ms, value));
 const {
-    Mover,
-    Targeter
+	Lazy,
+	Adapter,
+	Targeter,
+	Skills: { warcry, curse, darkblessing, absorb, zap, taunt },
+	Mover,
+	ItemFilter,
+	Exchange,
 } = await proxied_require(
-    'Mover.js',
-    'Targeter.js',
+	'Exchange.js',
+	'Mover.js',
+	'Lazy.js',
+	'Adapter.js',
+	'Targeter.js',
+	'GiveawayJoin.js',
+	'Skills.js',
+	'ItemFilter.js'
 );
 
+const afflicted = (status_name, entity = character) => status_name in entity.s;
+
 let FARM_TARGET = "odino";
+
+
+let SUGAR_FILTER = ItemFilter.ofName('candycanesword').level('7', '==').build();
+
+function follow_entity(entity, distance) {
+	let point = angleToPoint(entity.real_x, entity.real_y);
+	var position = pointOnAngle(entity, point, distance);
+	position.map = character.map;
+	moving = false;
+	if (!character.moving) {
+		move_to(position);
+	}
+}
+
+
+function angleToPoint(x, y) {
+	const deltaX = character.real_x - x;
+	const deltaY = character.real_y - y;
+
+	return Math.atan2(deltaY, deltaX);
+}
+
+function pointOnAngle(entity, angle, tdistance) {
+	let cur_distance = distance(character, entity);
+	let cur_linear_distance = distance_to_point(entity.real_x, entity.real_y);
+	tdistance = tdistance + cur_linear_distance - cur_distance;
+	return {
+		x: entity.real_x + tdistance * Math.cos(angle),
+		y: entity.real_y + tdistance * Math.sin(angle),
+	};
+}
+
+let DPS_SET = [
+	[FIRE_FILTER, 'mainhand'],
+	[FIRE_FILTER, 'offhand'],
+];
+let SUGAR_SET = [
+	[MANASTEAL_FILTER, 'chest'],
+	[SUGAR_FILTER, 'mainhand'],
+	[SUGAR_FILTER, 'offhand'],
+];
+let SUGAR_LESSER_SET = [
+	[SUGAR_FILTER, 'mainhand'],
+	[PIERCE_FILTER, 'chest'],
+];
 
 let FARM_LOCATION = {
 	    x: 16.5,
@@ -25,9 +83,92 @@ if(!perform_miracles && false) {
 	FARM_LOCATION.y = 695.5;
 }
 
-var targeter = new Targeter([FARM_TARGET], [character.name], {
+const ensure_equipped_batch = async (filters_and_slots) => {
+	let call = [];
+	for (let i = 0; i < filters_and_slots.length; i++) {
+		let [item_filter, slot] = filters_and_slots[i];
+		if (!item_filter(character.slots[slot])) {
+			const index = character.items.findIndex(item_filter);
+			if (index == -1) {
+        			log(JSON.stringify(item_filter.looking))
+				log('Failed while looking for an item.');
+				break;
+			}
+			call.push({ num: index, slot: slot });
+			let temp = character.items[index];
+			character.items[index] = character.slots[slot];
+			character.slots[slot] = temp;
+		}
+	}
+	if (call.length == 0) {
+		return {};
+	}
+	parent.socket.emit('equip_batch', call);
+	return await parent.push_deferred('equip_batch');
+};
+
+const ensure_equipped = (() => {
+	const EQUIP_ADAPTABLE = {
+		num: 0,
+		slot: '',
+	};
+	const EQUIP_ADAPTER = Adapter('num', 'slot');
+	return (item_filter, slot) => {
+		switch (typeof item_filter) {
+			case 'function':
+				if (!item_filter(character.slots[slot])) {
+					const index = get_index_of_item(item_filter);
+					if (index != -1) {
+						let result = parent
+							.push_deferred('equip')
+							.then(() => true);
+						parent.socket.emit(
+							'equip',
+							EQUIP_ADAPTER(EQUIP_ADAPTABLE, index, slot)
+						);
+						return result;
+					}
+					return Promise.resolve(false);
+				}
+				return Promise.resolve(true);
+			case 'string':
+				if (character.slots[slot]?.name != item_filter) {
+					const index = get_index_of_item(item_filter);
+					if (index != -1) {
+						let result = parent
+							.push_deferred('equip')
+							.then(() => true);
+						parent.socket.emit(
+							'equip',
+							EQUIP_ADAPTER(EQUIP_ADAPTABLE, index, slot)
+						);
+						return result;
+					}
+					return Promise.resolve(false);
+				}
+				return Promise.resolve(true);
+		}
+	};
+})();
+
+if (character.name == 'Rael') {
+	parent.socket.on('hit', (data) => {
+		if (data.hid == character.name && data.source == 'attack') {
+			ensure_equipped_batch(DPS_SET);
+		}
+	});
+	setInterval(() => {
+		let attack_target = find_viable_target();
+		if (attack_target != null) {
+			follow_entity(attack_target, 20);
+		} else {
+			ensure_equipped_batch(DPS_SET);
+		}
+	}, 400);
+
+var targeter = new Targeter([FARM_TARGET], ["Rael", "Raelina"], {
     RequireLOS: false,
-    TagTargets: true,
+    TagTargets: character.name == "Raelina",
     Solo: false,
 });
 
@@ -153,8 +294,33 @@ async function farm() {
     if (attack_target != null) {
         let distance_from_target = distance(attack_target, character);
         if (distance_from_target < character.range) {
+			if (can_use('warcry', NOW) && !afflicted('warcry')) {
+				warcry();
+			}
             if (can_use('attack', NOW)) {
-                attack(attack_target);
+				if(character.name == "Rael") {
+					let r = Promise.race([
+						attack(attack_target, true),
+						sleep(character.ping * 4),
+					]);
+					
+					if (character.s.sugarrush == null) {
+						if(distance_from_target > 0) {
+							ensure_equipped_batch(SUGAR_SET);
+						}
+					} else {
+						ensure_equipped_batch(SUGAR_LESSER_SET);
+					}
+					if ((await r) == undefined) {
+						// log(
+						// 	'Attack promise seems to have been dropped'
+						// );
+						ensure_equipped_batch(DPS_SET);
+						parent.resolve_deferred('attack', undefined);
+					}
+				} else {
+                	attack(attack_target);
+				}
             }
         } else {
             move_to(attack_target);
