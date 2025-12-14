@@ -7,12 +7,12 @@ const {
     'Targeter.js',
 );
 
-let FARM_TARGET = "ghost";
+let FARM_TARGET = "stoneworm";
 
 let FARM_LOCATION = {
-	    x: -405.5,
-	    y: -1642.5,
-	    map: 'halloween',
+	    x: 676.5,
+	    y: 129,
+	    map: 'spookytown',
 	},
 	to_party = ['Rael', 'Raelina', 'Geoffriel'],
 	party_leader = 'Geoffriel',
@@ -21,11 +21,11 @@ let FARM_LOCATION = {
 let perform_miracles = character.name == "Raelina";
 
 if(!perform_miracles) {
-	FARM_LOCATION.x = 145.5;
-	FARM_LOCATION.y = -1270;
+	FARM_LOCATION.x = 994.5;
+	FARM_LOCATION.y = -133;
 }
 
-var targeter = new Targeter(perform_miracles ? ['fvampire', FARM_TARGET] : [FARM_TARGET], [character.name], {
+var targeter = new Targeter([FARM_TARGET], [character.name], {
     RequireLOS: false,
     TagTargets: true,
     Solo: false,
