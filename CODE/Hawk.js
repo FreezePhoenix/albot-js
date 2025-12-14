@@ -213,6 +213,8 @@ async function use_hp() {
     }
 }
 const whitelist = [
+	'dstones',
+	'swifty',
 	'hbow',
 	'pleather',
 	'frogt',
