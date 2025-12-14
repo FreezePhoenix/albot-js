@@ -22,6 +22,15 @@ const afflicted = (status_name, entity = character) => status_name in entity.s;
 
 let FARM_TARGET = "odino";
 
+function get_index_of_item(name, max_level) {
+	if (typeof name == 'function') {
+		return character.items.findIndex(name); // name is a filter;
+	} else {
+		return character.items.findIndex((item) => {
+			return item?.name == name;
+		});
+	}
+}
 
 let SUGAR_FILTER = ItemFilter.ofName('candycanesword').level('7', '==').build();
 let PIERCE_FILTER = ItemFilter.ofName('tshirt7').level('8', '>=').build();
