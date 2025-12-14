@@ -213,6 +213,7 @@ async function use_hp() {
     }
 }
 const whitelist = [
+	'quiver',
 	'pclaw',
 	'elixirpnres',
 	'dstones',
