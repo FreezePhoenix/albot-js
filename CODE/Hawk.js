@@ -7,12 +7,12 @@ const {
     'Targeter.js',
 );
 
-let FARM_TARGET = "odino";
+let FARM_TARGET = "scorpion";
 
 let FARM_LOCATION = {
-	    x: 16.5,
-	    y: 695,
-	    map: 'mforest',
+	    x: 390.675,
+	    y: -1422.46,
+	    map: 'desertland',
 	},
 	to_party = ['Rael', 'Raelina', 'Geoffriel'],
 	party_leader = 'Geoffriel',
