@@ -10,9 +10,9 @@ const {
 let FARM_TARGET = "scorpion";
 
 let FARM_LOCATION = {
-	    x: 390.675,
-	    y: -1422.46,
-	    map: 'desertland',
+	    x: 1577.5,
+	    y: -168,
+	    map: 'main',
 	},
 	to_party = ['Rael', 'Raelina', 'Geoffriel'],
 	party_leader = 'Geoffriel',
