@@ -165,6 +165,7 @@ if (character.name == 'Rael') {
 			ensure_equipped_batch(DPS_SET);
 		}
 	}, 400);
+}
 
 var targeter = new Targeter([FARM_TARGET], ["Rael", "Raelina"], {
     RequireLOS: false,
