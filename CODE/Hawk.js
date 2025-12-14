@@ -18,8 +18,14 @@ let FARM_LOCATION = {
 	party_leader = 'Geoffriel',
 	merchant = 'AriaHarper';
 
+let perform_miracles = character.name == "Raelina";
 
-var targeter = new Targeter(['fvampire', FARM_TARGET], [character.name], {
+if(!perform_miracles) {
+	FARM_LOCATION.x = 145.5;
+	FARM_LOCATION.y = -1270;
+}
+
+var targeter = new Targeter(perform_miracles ? ['fvampire', FARM_TARGET] : [FARM_TARGET], [character.name], {
     RequireLOS: false,
     TagTargets: true,
     Solo: false,
