@@ -7,12 +7,12 @@ const {
     'Targeter.js',
 );
 
-let FARM_TARGET = "prat";
+let FARM_TARGET = "odino";
 
 let FARM_LOCATION = {
-	    x: -11,
-	    y: 114.5,
-	    map: 'level1',
+	    x: 16.5,
+	    y: 695,
+	    map: 'mforest',
 	},
 	to_party = ['Rael', 'Raelina', 'Geoffriel'],
 	party_leader = 'Geoffriel',
@@ -20,7 +20,7 @@ let FARM_LOCATION = {
 
 let perform_miracles = character.name == "Raelina";
 
-if(!perform_miracles) {
+if(!perform_miracles && false) {
 	FARM_LOCATION.x = -154;
 	FARM_LOCATION.y = 695.5;
 }
