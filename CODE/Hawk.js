@@ -33,8 +33,6 @@ function get_index_of_item(name, max_level) {
 }
 
 let SUGAR_FILTER = ItemFilter.ofName('candycanesword').level('7', '==').build();
-let PIERCE_FILTER = ItemFilter.ofName('tshirt7').level('8', '>=').build();
-let MANASTEAL_FILTER = ItemFilter.ofName('tshirt9').level('8', '>=').build();
 let FIRE_FILTER = ItemFilter.ofName('fireblade').level('10', '==').build();
 
 function follow_entity(entity, distance) {
@@ -70,13 +68,8 @@ let DPS_SET = [
 	[FIRE_FILTER, 'offhand'],
 ];
 let SUGAR_SET = [
-	[MANASTEAL_FILTER, 'chest'],
 	[SUGAR_FILTER, 'mainhand'],
 	[SUGAR_FILTER, 'offhand'],
-];
-let SUGAR_LESSER_SET = [
-	[SUGAR_FILTER, 'mainhand'],
-	[PIERCE_FILTER, 'chest'],
 ];
 
 if (character.name == 'Rael') {
@@ -331,25 +324,54 @@ async function farm() {
 			}
             if (can_use('attack', NOW)) {
 				if(character.name == "Rael") {
-					let r = Promise.race([
-						attack(attack_target, true),
-						sleep(character.ping * 4),
-					]);
-					
-					if (character.s.sugarrush == null) {
-						if(distance_from_target > 0) {
-							ensure_equipped_batch(SUGAR_SET);
+					try {
+						let r = Promise.race([
+							attack(attack_target, true),
+							sleep(character.ping * 4),
+						]);
+						
+						if (character.s.sugarrush == null) {
+							if(distance_from_target > 0) {
+								ensure_equipped_batch(SUGAR_SET);
+							}
 						}
-					} else {
-						ensure_equipped_batch(SUGAR_LESSER_SET);
+						if ((await r) == undefined) {
+							// log(
+							// 	'Attack promise seems to have been dropped'
+							// );
+							ensure_equipped_batch(DPS_SET);
+							parent.resolve_deferred('attack', undefined);
+						} 
+					}  catch (e) {
+						switch (e.reason) {
+							case 'too_far':
+								await sleep(10);
+								ensure_equipped_batch(DPS_SET);
+								break;
+							case 'cooldown':
+								await sleep(e.ms);
+								ensure_equipped_batch(DPS_SET);
+								return;
+							case 'not_there':
+								await sleep(10);
+								ensure_equipped_batch(DPS_SET);
+								return;
+							case 'no_mp':
+								if (LOGGED++ < 10) {
+									console.error(
+										'WHY IS THIS HAPPENING? WE ARE OUT OF MP: ' +
+											character.name
+									);
+								}
+								await sleep(100);
+								ensure_equipped_batch(DPS_SET);
+								return;
+							default:
+								await sleep(10);
+								break;
+						}
 					}
-					if ((await r) == undefined) {
-						// log(
-						// 	'Attack promise seems to have been dropped'
-						// );
-						ensure_equipped_batch(DPS_SET);
-						parent.resolve_deferred('attack', undefined);
-					}
+					
 				} else {
                 	attack(attack_target);
 				}
