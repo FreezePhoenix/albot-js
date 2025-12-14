@@ -24,6 +24,9 @@ let FARM_TARGET = "odino";
 
 
 let SUGAR_FILTER = ItemFilter.ofName('candycanesword').level('7', '==').build();
+let PIERCE_FILTER = ItemFilter.ofName('tshirt7').level('8', '>=').build();
+let MANASTEAL_FILTER = ItemFilter.ofName('tshirt9').level('8', '>=').build();
+let FIRE_FILTER = ItemFilter.ofName('fireblade').level('10', '==').build();
 
 function follow_entity(entity, distance) {
 	let point = angleToPoint(entity.real_x, entity.real_y);
