@@ -21,12 +21,12 @@ let FARM_LOCATION = {
 let perform_miracles = character.name == "Raelina";
 
 if(!perform_miracles) {
-	FARM_TARGET = "scorpion";
+	FARM_TARGET = "prat";
 
 	FARM_LOCATION = {
-	    x: 1577.5,
-	    y: -168,
-	    map: 'main',
+	    x: -11,
+	    y: 114.5,
+	    map: 'level1',
 	};
 }
 
