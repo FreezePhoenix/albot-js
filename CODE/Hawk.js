@@ -213,6 +213,7 @@ async function use_hp() {
     }
 }
 const whitelist = [
+	'mushroomstaff',
 	'quiver',
 	'pclaw',
 	'elixirpnres',
