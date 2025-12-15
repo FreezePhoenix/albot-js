@@ -7,15 +7,15 @@ const {
     'Targeter.js',
 );
 
-let FARM_TARGET = "plantoid";
+let FARM_TARGET = "scorpion";
 
 let FARM_LOCATION = {
-	    x: -794,
-	    y: -301,
-	    map: 'desertland',
+	    x: 1577.5,
+	    y: -168,
+	    map: 'main',
 	},
 	to_party = ['Rael', 'Raelina', 'Geoffriel'],
-	party_leader = 'trololol',
+	party_leader = 'Geoffriel',
 	merchant = 'AriaHarper';
 
 let perform_miracles = character.name == "Raelina";
@@ -153,9 +153,6 @@ async function farm() {
     if (attack_target != null) {
         let distance_from_target = distance(attack_target, character);
         if (distance_from_target < character.range) {
-			if(can_use("hardshell", NOW)) {
-				use_skill("hardshell");
-			}
             if (can_use('attack', NOW)) {
                 attack(attack_target);
             }
