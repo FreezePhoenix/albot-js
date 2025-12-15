@@ -7,15 +7,15 @@ const {
     'Targeter.js',
 );
 
-let FARM_TARGET = "scorpion";
+let FARM_TARGET = "plantoid";
 
 let FARM_LOCATION = {
-	    x: 1577.5,
-	    y: -168,
-	    map: 'main',
+	    x: -794,
+	    y: -301,
+	    map: 'desertland',
 	},
 	to_party = ['Rael', 'Raelina', 'Geoffriel'],
-	party_leader = 'Geoffriel',
+	party_leader = 'trololol',
 	merchant = 'AriaHarper';
 
 let perform_miracles = character.name == "Raelina";
