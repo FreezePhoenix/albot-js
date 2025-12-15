@@ -7,12 +7,12 @@ const {
     'Targeter.js',
 );
 
-let FARM_TARGET = "scorpion";
+let FARM_TARGET = "minimush";
 
 let FARM_LOCATION = {
-	    x: 1577.5,
-	    y: -168,
-	    map: 'main',
+	    x: 8,
+	    y: 630.5,
+	    map: 'halloween',
 	},
 	to_party = ['Rael', 'Raelina', 'Geoffriel'],
 	party_leader = 'Geoffriel',
