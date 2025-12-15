@@ -21,8 +21,13 @@ let FARM_LOCATION = {
 let perform_miracles = character.name == "Raelina";
 
 if(!perform_miracles && false) {
-	FARM_LOCATION.x = -154;
-	FARM_LOCATION.y = 695.5;
+	FARM_TARGET = "scorpion";
+
+	FARM_LOCATION = {
+	    x: 1577.5,
+	    y: -168,
+	    map: 'main',
+	};
 }
 
 var targeter = new Targeter([FARM_TARGET], [character.name], {
