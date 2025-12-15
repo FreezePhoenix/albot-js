@@ -15,7 +15,7 @@ let FARM_LOCATION = {
 	    map: 'main',
 	},
 	to_party = ['Rael', 'Raelina', 'Geoffriel'],
-	party_leader = 'Geoffriel',
+	party_leader = 'trololol',
 	merchant = 'AriaHarper';
 
 
