@@ -20,7 +20,7 @@ let FARM_LOCATION = {
 
 let perform_miracles = character.name == "Raelina";
 
-if(!perform_miracles && false) {
+if(!perform_miracles) {
 	FARM_TARGET = "scorpion";
 
 	FARM_LOCATION = {
