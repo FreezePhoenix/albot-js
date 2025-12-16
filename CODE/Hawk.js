@@ -269,15 +269,18 @@ async function farm() {
 				}
             }
         } else {
-            move_to(attack_target);
-        }
-    } else {
-        if (character.map != FARM_LOCATION.map || distance_to_point(FARM_LOCATION.x, FARM_LOCATION.y) > 100) {
-            move_to(FARM_LOCATION);
+			if(can_use("cleave", NOW) && character.mp > 1000) {
+				parent.socket.emit('unequip', {	slot: 'offhand' });
+				ensure_equipped_batch(AXE_SET);
+				use_skill('cleave');
+			}
         }
     }
     await sleep(10);
 }
+
+
+move_to(FARM_LOCATION);
 
 
 function num_items(name) {
