@@ -26,6 +26,14 @@ let DPS_SET = [
 	[FIRE_FILTER, 'offhand'],
 ];
 
+
+if (character.name == 'Rael') {
+	DPS_SET[0] = [
+		ItemFilter.ofName('fireblade').level('13', '==').build(),
+		'mainhand',
+	];
+}
+
 let AXE_SET = [[AXE_FILTER, 'mainhand']]
 
 let FARM_LOCATION = {
