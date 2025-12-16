@@ -26,6 +26,8 @@ let DPS_SET = [
 	[FIRE_FILTER, 'offhand'],
 ];
 
+let AXE_SET = [[AXE_FILTER, 'mainhand']]
+
 let FARM_LOCATION = {
 	    x: 8,
 	    y: 630.5,
