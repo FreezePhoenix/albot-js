@@ -252,8 +252,7 @@ async function farm() {
         let distance_from_target = distance(attack_target, character);
         if (distance_from_target < character.range) {
             if (can_use('attack', NOW)) {
-				if(character.name == "Raelina" && can_use("cleave", NOW) && character.mp > 750) {
-					attack(attack_target);
+				if(can_use("cleave", NOW) && character.mp > 800) {
 					parent.socket.emit('unequip', {	slot: 'offhand' });
 					ensure_equipped_batch(AXE_SET);
 					use_skill('cleave');
