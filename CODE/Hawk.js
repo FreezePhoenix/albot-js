@@ -1,13 +1,30 @@
 const sleep = (ms, value) => new Promise((r) => setTimeout(r, ms, value));
 const {
     Mover,
-    Targeter
+    Targeter,
+	ItemFilter,
+	Adapter
 } = await proxied_require(
     'Mover.js',
+	'Adapter.js',
     'Targeter.js',
+	'ItemFilter.js',
 );
 
 let FARM_TARGET = "minimush";
+
+let AXE_FILTER = new ItemFilter()
+	.names('scythe', 'bataxe')
+	.level('7', '>=')
+	.build();
+
+let FIRE_FILTER = ItemFilter.ofName('fireblade').level('10', '>=').build();
+
+
+let DPS_SET = [
+	[FIRE_FILTER, 'mainhand'],
+	[FIRE_FILTER, 'offhand'],
+];
 
 let FARM_LOCATION = {
 	    x: 8,
@@ -57,6 +74,74 @@ setInterval(() => {
 		}
 	}
 }, 1000);
+
+const ensure_equipped_batch = async (filters_and_slots) => {
+	let call = [];
+	for (let i = 0; i < filters_and_slots.length; i++) {
+		let [item_filter, slot] = filters_and_slots[i];
+		if (!item_filter(character.slots[slot])) {
+			const index = character.items.findIndex(item_filter);
+			if (index == -1) {
+        			log(JSON.stringify(item_filter.looking))
+				log('Failed while looking for an item.');
+				break;
+			}
+			call.push({ num: index, slot: slot });
+			let temp = character.items[index];
+			character.items[index] = character.slots[slot];
+			character.slots[slot] = temp;
+		}
+	}
+	if (call.length == 0) {
+		return {};
+	}
+	parent.socket.emit('equip_batch', call);
+	return await parent.push_deferred('equip_batch');
+};
+
+const ensure_equipped = (() => {
+	const EQUIP_ADAPTABLE = {
+		num: 0,
+		slot: '',
+	};
+	const EQUIP_ADAPTER = Adapter('num', 'slot');
+	return (item_filter, slot) => {
+		switch (typeof item_filter) {
+			case 'function':
+				if (!item_filter(character.slots[slot])) {
+					const index = get_index_of_item(item_filter);
+					if (index != -1) {
+						let result = parent
+							.push_deferred('equip')
+							.then(() => true);
+						parent.socket.emit(
+							'equip',
+							EQUIP_ADAPTER(EQUIP_ADAPTABLE, index, slot)
+						);
+						return result;
+					}
+					return Promise.resolve(false);
+				}
+				return Promise.resolve(true);
+			case 'string':
+				if (character.slots[slot]?.name != item_filter) {
+					const index = get_index_of_item(item_filter);
+					if (index != -1) {
+						let result = parent
+							.push_deferred('equip')
+							.then(() => true);
+						parent.socket.emit(
+							'equip',
+							EQUIP_ADAPTER(EQUIP_ADAPTABLE, index, slot)
+						);
+						return result;
+					}
+					return Promise.resolve(false);
+				}
+				return Promise.resolve(true);
+		}
+	};
+})();
 
 let EARTH = ["earthPri", "earthRan3", "earthRog3"];
 const timeout = async (promise, timeout) => {
@@ -153,13 +238,26 @@ function find_viable_target() {
     return targeter.GetPriorityTarget(1, false, /* ignore_fire */ true)[0];
 }
 
+parent.socket.on('hit', (data) => {
+	if (data.hid == character.name && data.source == 'attack') {
+		ensure_equipped_batch(DPS_SET);
+	}
+});
+
 async function farm() {
     let attack_target = find_viable_target();
     if (attack_target != null) {
         let distance_from_target = distance(attack_target, character);
         if (distance_from_target < character.range) {
             if (can_use('attack', NOW)) {
-                attack(attack_target);
+				if(character.name == "Raelina" && can_use("cleave", NOW) && character.mp > 750) {
+					attack(attack_target);
+					parent.socket.emit('unequip', {	slot: 'offhand' });
+					ensure_equipped_batch(AXE_SET);
+					use_skill('cleave');
+				} else {
+                	attack(attack_target);
+				}
             }
         } else {
             move_to(attack_target);
