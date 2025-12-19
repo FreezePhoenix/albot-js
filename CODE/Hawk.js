@@ -15,7 +15,7 @@ let FARM_TARGET = "scorpion",
 
 	FARM_LOCATION = {
 	    x: 1577.5,
-	    y: -168 + (character.name == "Rael" ? -10 : 10),
+	    y: -168,
 	    map: 'main',
 	};
 
@@ -32,6 +32,15 @@ let DPS_SET = [
 	[FIRE_FILTER, 'offhand'],
 ];
 
+
+if(character.name == "Raelina") {
+	FARM_TARGET = "rat";
+	FARM_LOCATION = {
+		x: -8.5,
+		y: -148,
+		map: "mansion"
+	};
+};
 
 if (character.name == 'Rael') {
 	DPS_SET[0] = [
