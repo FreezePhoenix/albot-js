@@ -37,12 +37,7 @@ if (character.name == 'Rael') {
 
 let AXE_SET = [[AXE_FILTER, 'mainhand']]
 
-let FARM_LOCATION = {
-	    x: 8,
-	    y: 630.5,
-	    map: 'halloween',
-	},
-	to_party = ['Rael', 'Raelina', 'Geoffriel'],
+let to_party = ['Rael', 'Raelina', 'Geoffriel'],
 	party_leader = 'Geoffriel',
 	merchant = 'AriaHarper';
 
