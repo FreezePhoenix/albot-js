@@ -195,6 +195,8 @@ let NOW = performance.now();
 
 
 
+parent.socket.emit('unequip', {	slot: 'offhand' });
+
 setInterval(() => {
 	if (character.name === party_leader) {
 		for (let i = 1; i < to_party.length; i++) {
@@ -237,11 +239,6 @@ function find_viable_target() {
     return targeter.GetPriorityTarget(1, false, /* ignore_fire */ true)[0];
 }
 
-parent.socket.on('hit', (data) => {
-	if (data.hid == character.name && data.source == 'attack') {
-		ensure_equipped_batch(DPS_SET);
-	}
-});
 
 async function farm() {
     let attack_target = find_viable_target();
@@ -251,7 +248,6 @@ async function farm() {
             if (can_use('attack', NOW)) {
 				if(can_use("cleave", NOW) && character.mp > 1000) {
                 	attack(attack_target);
-					parent.socket.emit('unequip', {	slot: 'offhand' });
 					ensure_equipped_batch(AXE_SET);
 					use_skill('cleave');
 				} else {
@@ -260,7 +256,6 @@ async function farm() {
             }
         } else {
 			if(can_use("cleave", NOW) && character.mp > 1000) {
-				parent.socket.emit('unequip', {	slot: 'offhand' });
 				ensure_equipped_batch(AXE_SET);
 				use_skill('cleave');
 			}
