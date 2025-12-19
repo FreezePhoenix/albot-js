@@ -19,6 +19,11 @@ let FARM_TARGET = "scorpion",
 	    map: 'main',
 	};
 
+let AXE_FILTER = new ItemFilter()
+	.names('scythe', 'bataxe')
+	.level('7', '>=')
+	.build();
+
 let FIRE_FILTER = ItemFilter.ofName('fireblade').level('10', '>=').build();
 
 
