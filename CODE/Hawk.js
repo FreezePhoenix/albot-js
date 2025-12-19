@@ -3,13 +3,16 @@ const {
     Mover,
     Targeter,
 	ItemFilter,
-	Adapter
+	Adapter,
+	Dismantle
 } = await proxied_require(
     'Mover.js',
 	'Adapter.js',
+	'Dismantle.js',
     'Targeter.js',
 	'ItemFilter.js',
 );
+Dismantle('lostearring');
 
 let FARM_TARGET = "scorpion",
 
@@ -322,6 +325,8 @@ async function use_hp() {
     }
 }
 const whitelist = [
+	'spores',
+	'rattail',
 	'mushroomstaff',
 	'quiver',
 	'pclaw',
