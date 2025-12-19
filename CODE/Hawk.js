@@ -11,12 +11,13 @@ const {
 	'ItemFilter.js',
 );
 
-let FARM_TARGET = "minimush";
+let FARM_TARGET = "scorpion",
 
-let AXE_FILTER = new ItemFilter()
-	.names('scythe', 'bataxe')
-	.level('7', '>=')
-	.build();
+	FARM_LOCATION = {
+	    x: 1577.5,
+	    y: -168 + (character.name == "Rael" ? -10 : 10),
+	    map: 'main',
+	};
 
 let FIRE_FILTER = ItemFilter.ofName('fireblade').level('10', '>=').build();
 
@@ -44,18 +45,6 @@ let FARM_LOCATION = {
 	to_party = ['Rael', 'Raelina', 'Geoffriel'],
 	party_leader = 'Geoffriel',
 	merchant = 'AriaHarper';
-
-let perform_miracles = character.name == "Raelina";
-
-if(!perform_miracles) {
-	FARM_TARGET = "scorpion";
-
-	FARM_LOCATION = {
-	    x: 1577.5,
-	    y: -168,
-	    map: 'main',
-	};
-}
 
 var targeter = new Targeter([FARM_TARGET], [character.name], {
     RequireLOS: false,
