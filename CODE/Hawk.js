@@ -15,7 +15,6 @@ const {
 Dismantle('lostearring');
 
 let FARM_TARGET = "scorpion",
-
 	FARM_LOCATION = {
 	    x: 1577.5,
 	    y: -168,
@@ -37,6 +36,15 @@ let DPS_SET = [
 
 
 if(character.name == "Raelina") {
+	FARM_TARGET = "squigtoad";
+	FARM_LOCATION = {
+	    x: -1175.5,
+	    y: 422,
+	    map: 'main',
+	};
+};
+
+if(character.name == "Boismon") {
 	FARM_TARGET = "rat";
 	FARM_LOCATION = {
 		x: -8.5,
@@ -54,8 +62,8 @@ if (character.name == 'Rael') {
 
 let AXE_SET = [[AXE_FILTER, 'mainhand']]
 
-let to_party = ['Rael', 'Raelina', 'Geoffriel'],
-	party_leader = 'Geoffriel',
+let to_party = ['Rael', 'Raelina', 'Boismon'],
+	party_leader = 'Boismon',
 	merchant = 'AriaHarper';
 
 var targeter = new Targeter([FARM_TARGET], [character.name], {
@@ -248,32 +256,66 @@ const LOOP = async () => {
 };
 
 function find_viable_target() {
-    return targeter.GetPriorityTarget(1, false, /* ignore_fire */ true)[0];
+	if(character.name == "Raelina") {
+    	return targeter.GetPriorityTarget(1, false, /* ignore_fire */ true, false, false, false, true)[0];
+	} else if(character.name == "Rael") {
+    	return targeter.GetPriorityTarget(1, false, /* ignore_fire */ true)[0];
+	} else if(character.name == "Boismon") {
+    	return targeter.GetPriorityTarget(5, false, /* ignore_fire */ true);
+	}
 }
 
 
 async function farm() {
-    let attack_target = find_viable_target();
-    if (attack_target != null) {
-        let distance_from_target = distance(attack_target, character);
-        if (distance_from_target < character.range) {
-            if (can_use('attack', NOW)) {
-				if(can_use("cleave", NOW) && character.mp > 1000) {
-                	attack(attack_target);
-					ensure_equipped_batch(AXE_SET);
-					use_skill('cleave');
+	if(character.name != "Boismon") {
+	    let attack_target = find_viable_target();
+	    if (attack_target != null) {
+	        let distance_from_target = distance(attack_target, character);
+	        if (distance_from_target < character.range) {
+	            if (can_use('attack', NOW)) {
+					if(can_use("cleave", NOW) && character.mp > 1000 && character.name == "Rael") {
+	                	attack(attack_target);
+						ensure_equipped_batch(AXE_SET);
+						use_skill('cleave');
+					} else {
+	                	attack(attack_target);
+					}
+	            }
+	        } else {
+				if(character.name == "Rael") {
+					if(can_use("cleave", NOW) && character.mp > 1000) {
+						ensure_equipped_batch(AXE_SET);
+						use_skill('cleave');
+					}
 				} else {
-                	attack(attack_target);
+					move_to(attack_target);
 				}
-            }
-        } else {
-			if(can_use("cleave", NOW) && character.mp > 1000) {
-				ensure_equipped_batch(AXE_SET);
-				use_skill('cleave');
+	        }
+	    }
+	    await sleep(10);
+	} else {
+	    let attack_targets = find_viable_target();
+		if(attack_targets.length != 0) {
+			let in_range = attack_targets.filter((attack_target) => {
+				let distance_from_target = distance(attack_target, character);
+				return distance_from_target < character.range;
+			});
+			if(in_range.length != 0) {
+				if(can_use("attack", NOW)) {
+					if(in_range.length >= 4 && character.mp > 400) {
+						parent.socket.emit("skill", {name:"5shot",ids: in_range.map(a => a.id) });
+					} else if(in_range.length >= 2 & character.mp > 300) {
+						parent.socket.emit("skill", {name:"3shot",ids: in_range.map(a => a.id) });
+					} else {
+						attack(in_range[0]);
+					}
+			  	}
+			} else {
+				move_to(attack_targets[0]);
 			}
-        }
-    }
-    await sleep(10);
+		}
+	    await sleep(10);
+	}
 }
 
 
