@@ -1,4 +1,4 @@
-const SCRIPT = "BScorpionPriest.js"
+const SCRIPT = "Hawk.js"
 const SERVER = "US III";
 let RUN_ALL = true;
 let RUN_MERCH = true;
@@ -40,7 +40,7 @@ module.exports = {
               "runScript": SCRIPT, 
               "server": SERVER
           }, // */
-          {
+          /* {
               "characterName": "Geoffriel",
               "characte rId": "5178085749030912",
               "runScript": SCRIPT,
@@ -64,11 +64,11 @@ module.exports = {
               "runScript": SCRIPT,
               "server": SERVER
           }, // */
-          /* {
+          {
               "characterName": "Boismon",
               "characterId": "5760997546524672",
-              "runScript": "DarkHound.js",
-              "server": "US I"
+              "runScript": SCRIPT,
+              "server": SERVER
           }, // */
           /* {
               "characterName": "Firenus",
