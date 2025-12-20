@@ -213,10 +213,6 @@ function move_to(location, callback) {
 
 let NOW = performance.now();
 
-
-
-parent.socket.emit('unequip', {	slot: 'offhand' });
-
 parent.socket.on('request', ({ name }) => {
 	console.log('Party Request');
 	if (to_party.indexOf(name) != -1) {
