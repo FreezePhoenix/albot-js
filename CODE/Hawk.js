@@ -73,7 +73,7 @@ var targeter = new Targeter([FARM_TARGET], [character.name], {
 });
 
 setInterval(() => {
-	if (character.skin != FARM_TARGET && !character.skin?.startsWith("kitty")) {
+	if (character.name == "Boismon" ? !character.skin?.startsWith("kitty") : character.skin != FARM_TARGET) {
 		let closest = null;
 		let closest_distance = Infinity;
 		for (let x in parent.entities) {
