@@ -301,7 +301,9 @@ async function farm() {
 					move_to(attack_target);
 				}
 	        }
-	    }
+	    } else {
+			move_to(FARM_LOCATION);
+		}
 	    await sleep(10);
 	} else {
 		if(character.skin?.startsWith("kitty")) {
