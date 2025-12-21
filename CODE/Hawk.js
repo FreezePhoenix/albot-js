@@ -87,9 +87,9 @@ setInterval(() => {
 				closest_distance = dist;
 			}
 		}
-		if (closest?.mtype == FARM_TARGET && closest_distance < 500) {
+		if ((closest?.mtype == FARM_TARGET || closest?.mtype?.startsWith("kitty")) && closest_distance < 500) {
 			parent.socket.emit('blend');
-			character.skin = FARM_TARGET;
+			character.skin = closest?.mtype;
 		}
 	}
 }, 1000);
@@ -304,32 +304,40 @@ async function farm() {
 	    }
 	    await sleep(10);
 	} else {
-	    let attack_targets = find_viable_target();
-		if(attack_targets.length != 0) {
-			let in_range = attack_targets.filter((attack_target) => {
-				let distance_from_target = distance(attack_target, character);
-				return distance_from_target < character.range;
-			});
-			if(in_range.length != 0) {
-				if(can_use("attack", NOW)) {
-					if(in_range.length >= 4 && character.mp > 400) {
-						parent.socket.emit("skill", {name:"5shot",ids: in_range.map(a => a.id) });
-					} else if(in_range.length >= 2 & character.mp > 300) {
-						parent.socket.emit("skill", {name:"3shot",ids: in_range.map(a => a.id) });
-					} else {
-						attack(in_range[0]);
-					}
-			  	}
+		if(character.skin?.startsWith("kitty")) {
+		    let attack_targets = find_viable_target();
+			if(attack_targets.length != 0) {
+				let in_range = attack_targets.filter((attack_target) => {
+					let distance_from_target = distance(attack_target, character);
+					return distance_from_target < character.range;
+				});
+				if(in_range.length != 0) {
+					if(can_use("attack", NOW)) {
+						if(in_range.length >= 4 && character.mp > 400) {
+							parent.socket.emit("skill", {name:"5shot",ids: in_range.map(a => a.id) });
+						} else if(in_range.length >= 2 & character.mp > 300) {
+							parent.socket.emit("skill", {name:"3shot",ids: in_range.map(a => a.id) });
+						} else {
+							attack(in_range[0]);
+						}
+				  	}
+				} else {
+					move_to(attack_targets[0]);
+				}
 			} else {
-				move_to(attack_targets[0]);
+				move_to(FARM_LOCATION);
 			}
+			await sleep(10);
+		} else {
+			move_to({
+				x: -704.5,
+				y:  1141,
+				map: "main"
+			});
 		}
-	    await sleep(10);
 	}
 }
 
-
-move_to(FARM_LOCATION);
 
 
 function num_items(name) {
