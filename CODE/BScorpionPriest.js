@@ -1,14 +1,14 @@
 
-if(character.name == "Raelina") {
-	parent.switch_script("hawk");
-}
+// if(character.name == "Raelina") {
+// 	parent.switch_script("hawk");
+// }
 
-if(character.name == "Rael") {
-	parent.switch_script("hawk");
-}
-if(character.name == "Geoffriel") {
-	parent.switch_script("crab");
-}
+// if(character.name == "Rael") {
+// 	parent.switch_script("hawk");
+// }
+// if(character.name == "Geoffriel") {
+// 	parent.switch_script("crab");
+// }
 
 const {
 	Lazy,
