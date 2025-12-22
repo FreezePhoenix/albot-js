@@ -795,7 +795,7 @@ if (character.name == 'Geoffriel') {
 	const L_HELMET_FILTER = ItemFilter.ofName('wcap').level('8', '==').build();
 	const L_EARRING1_FILTER = ItemFilter.ofName('mearring').build();
 	const L_EARRING2_FILTER = ItemFilter.ofName('dexearringx').build();
-	const L_AMULET_FILTER = ItemFilter.ofName('spookyamulet').build();
+	const L_AMULET_FILTER = ItemFilter.ofName('spookyamulet').level('2', '>=').build();
 	const L_STAFF_FILTER = ItemFilter.ofName('lmace')
 		.level('4', '==')
 		.property('lucky')
