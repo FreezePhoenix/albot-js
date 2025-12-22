@@ -1,4 +1,4 @@
-const SCRIPT = "Hawk.js"
+const SCRIPT = "BScorpionPriest.js"
 const SERVER = "US III";
 let RUN_ALL = true;
 let RUN_MERCH = true;
