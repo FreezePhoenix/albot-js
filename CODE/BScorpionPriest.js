@@ -524,7 +524,7 @@ setInterval(async () => {
 		}
 	}
 }, 500);
-
+let IS_TURN_TO_SURGE = character.name == "Rael";
 parent.socket.on('cm', async function (a) {
 	let name = a.name;
 	let data = await JSON.parse(a.message);
@@ -549,8 +549,10 @@ parent.socket.on('cm', async function (a) {
 				}
 			}
 		} else {
-      console.log(data)
 			switch (data) {
+				case 'surged':
+					IS_TURN_TO_SURGE = true;
+					break;
 				case 'shutdown':
 					name == 'AriaHarper' && parent.shutdown();
 					break;
@@ -655,7 +657,13 @@ if (character.ctype == 'warrior') {
 	}
 	
 	parent.socket.on('drop', (data) => {
-		if(can_use("temporalsurge", NOW)) {
+		if(can_use("temporalsurge", NOW) && IS_TURN_TO_SURGE) {
+			if(character.name == "Rael") {
+				send_cm("Raelina", 'surged');
+			} else {
+				send_cm("Rael", 'surged');
+			}
+			IS_TURN_TO_SURGE = false;
 			ensure_equipped(TEMPORAL_ORB, 'orb');
 			parent.socket.emit("skill", { name: 'temporalsurge' });
 			ensure_equipped(DPS_ORB_FILTER, 'orb');
