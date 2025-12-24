@@ -636,7 +636,8 @@ setTimeout(async () => {
 
 if (character.ctype == 'warrior') {
 	const L_ORB_FILTER = ItemFilter.ofName('rabbitsfoot').build();
-	const DPS_ORB_FILTER = ItemFilter.ofName("orbofstr").build();
+	const DPS_ORB_FILTER = ItemFilter.ofName("orbofstr").level('4', '>=').build();
+	const TEMPORAL_ORB = ItemFilter.ofName("orboftemporal").build();
 	let LUCK_SET = [
 		[L_ORB_FILTER, 'orb']
 	];
@@ -651,7 +652,11 @@ if (character.ctype == 'warrior') {
 	}
 	
 	parent.socket.on('drop', (data) => {
-		ensure_equipped_batch(NON_LUCK_ORB);
+		if(can_use("temporalsurge", NOW)) {
+			ensure_equipped(TEMPORAL_ORB, 'orb');
+			parent.socket.emit("skill", { name: 'temporalsurge' });
+			ensure_equipped(DPS_ORB_FILTER, 'orb');
+		}
 	});
 	const JACKO_FILTER = ItemFilter.ofName('jacko').build();
 	const ORB_FILTER = new ItemFilter()
