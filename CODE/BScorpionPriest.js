@@ -741,15 +741,6 @@ if (character.ctype == 'warrior') {
 	}, 1000);
 }
 
-parent.socket.on('hit', (data) => {
-	if (data.stacked && data.id == character.name) {
-		move(
-			parent.character.real_x + (Math.floor(Math.random() * 30) - 15),
-			parent.character.real_y + (Math.floor(Math.random() * 30) - 15)
-		);
-	}
-});
-
 const kiting_origin = {
 		x: -440,
 		y: -1240,
