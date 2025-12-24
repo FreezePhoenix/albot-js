@@ -394,6 +394,9 @@ const ensure_equipped = (() => {
 							'equip',
 							EQUIP_ADAPTER(EQUIP_ADAPTABLE, index, slot)
 						);
+						let temp = character.items[index];
+						character.items[index] = character.slots[slot];
+						character.slots[slot] = temp;
 						return result;
 					}
 					return Promise.resolve(false);
