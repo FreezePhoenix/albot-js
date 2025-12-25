@@ -29,6 +29,7 @@ const {
 	'ItemFilter.js'
 );
 
+let IS_TURN_TO_SURGE = character.name == "Rael";
 const DISABLE_EVENTS = true;
 const sleep = (ms, value) => new Promise((r) => setTimeout(r, ms, value));
 
@@ -524,7 +525,6 @@ setInterval(async () => {
 		}
 	}
 }, 500);
-let IS_TURN_TO_SURGE = character.name == "Rael";
 parent.socket.on('cm', async function (a) {
 	let name = a.name;
 	let data = await JSON.parse(a.message);
@@ -639,10 +639,11 @@ setTimeout(async () => {
 	}
 }, 100);
 
+const TEMPORAL_ORB = ItemFilter.ofName("orboftemporal").build();
+
 if (character.ctype == 'warrior') {
 	const L_ORB_FILTER = ItemFilter.ofName('rabbitsfoot').build();
 	const DPS_ORB_FILTER = ItemFilter.ofName("orbofstr").level('4', '>=').build();
-	const TEMPORAL_ORB = ItemFilter.ofName("orboftemporal").build();
 	let LUCK_SET = [
 		[L_ORB_FILTER, 'orb']
 	];
@@ -661,7 +662,7 @@ if (character.ctype == 'warrior') {
 			if(character.name == "Rael") {
 				send_cm("Raelina", 'surged');
 			} else {
-				send_cm("Rael", 'surged');
+				send_cm("Geoffriel", 'surged');
 			}
 			IS_TURN_TO_SURGE = false;
 			ensure_equipped(TEMPORAL_ORB, 'orb');
@@ -946,6 +947,12 @@ if (character.name == 'Geoffriel') {
 		let { id, x, y } = data;
 		// console.log(data);
 		if (curEvent != null) {
+			if(can_use("temporalsurge", NOW) && IS_TURN_TO_SURGE) {
+				send_cm("Rael", 'surged');
+				IS_TURN_TO_SURGE = false;
+				ensure_equipped(TEMPORAL_ORB, 'orb');
+				parent.socket.emit("skill", { name: 'temporalsurge' });
+			}
 			setTimeout(LOOT_CHEST, 500, id);
 			setTimeout(RESET_GEAR, 1000);
 			return;
