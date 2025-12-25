@@ -947,17 +947,17 @@ if (character.name == 'Geoffriel') {
 		let { id, x, y } = data;
 		// console.log(data);
 		if (curEvent != null) {
+			setTimeout(LOOT_CHEST, 500, id);
+			setTimeout(RESET_GEAR, 1000);
+			return;
+		}
+		if (distance_to_point(x, y) < 200) {
 			if(can_use("temporalsurge", NOW) && IS_TURN_TO_SURGE) {
 				send_cm("Rael", 'surged');
 				IS_TURN_TO_SURGE = false;
 				ensure_equipped(TEMPORAL_ORB, 'orb');
 				parent.socket.emit("skill", { name: 'temporalsurge' });
 			}
-			setTimeout(LOOT_CHEST, 500, id);
-			setTimeout(RESET_GEAR, 1000);
-			return;
-		}
-		if (distance_to_point(x, y) < 200) {
 			let index_of_booster = character.items.findIndex(BOOSTER_FILTER);
 			ensure_equipped_batch(GOLD_SET);
 		    if(index_of_booster != -1) {
