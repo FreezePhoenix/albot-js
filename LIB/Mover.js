@@ -24,7 +24,7 @@
 //     }, smart.on_done);
 //   }
 // }
-
+let CACHE = new Map();
 // A very helpful function to turn a Mover path into a smart_move plot
 function convert(path, starting_map) {
   let plot = [];
@@ -138,14 +138,34 @@ class Mover {
   static async move_by_path(destination, callback, tries = 0) {
     let data = null;
     try {
-      data = await Mover.get_path(
-        {
-          x: Math.round(character.real_x),
-          y: Math.round(character.real_y),
-          map: character.map
-        },
-        destination
-      );
+	  if(this.caching) {
+		  let FROM = JSON.stringify({ x: Math.round(character.real_x), y: Math.round(character.real_y), map: character.map });
+	      let TO = JSON.stringify({x: Math.round(destination.x), y: Math.round(destination.y), map: destination.map});
+		  if(CACHE.has(FROM + TO)) {
+		  	console.log("Cache hit!");
+				data = CACHE.get(FROM + TO)
+		  } else {
+		    console.log("Cache miss!")
+				data = await Mover.get_path(
+				  {
+					x: Math.round(character.real_x),
+					y: Math.round(character.real_y),
+					map: character.map
+				  },
+				  destination
+				);
+				CACHE.set(FROM + TO, data);
+		  }
+	  } else {
+	      data = await Mover.get_path(
+	        {
+	          x: Math.round(character.real_x),
+	          y: Math.round(character.real_y),
+	          map: character.map
+	        },
+	        destination
+	      );
+	  }
     } catch(e) {
       console.log(e);
       data = null;
@@ -443,8 +463,9 @@ class Mover {
   static #sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
-  static init(smart, G, smart_move) {
+  static init(smart, G, smart_move, caching = false) {
     parent.resolve_deferreds("Mover.move");
+	this.caching = caching;
     this.smart = smart;
     this.G = G;
     this.smart_move = smart_move;
