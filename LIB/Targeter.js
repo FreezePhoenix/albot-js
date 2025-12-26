@@ -133,7 +133,7 @@ class Targeter {
 		if (entity.type == "monster") {
 			if (
 				this.IsTargetingParty(entity) ||
-				(entity.cooperative && entity.target != null || entity.mtype == "wabbit")
+				((entity.cooperative && entity.mtype != "phoenix") && entity.target != null || entity.mtype == "wabbit")
 			) {
 				if (entity.mtype == "grinch" || entity.mtype == "slenderman") {
 					return false;
