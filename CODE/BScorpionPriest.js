@@ -1013,13 +1013,11 @@ let PRIEST_DPS_SET = [[D_CHEST_FILTER, 'chest']];
 let PRIEST_DEBUFF_SET = [[DEBUFF_HP_CHEST, 'chest']];
 let AXE_SET = [[AXE_FILTER, 'mainhand']]
 let SUGAR_SET = [
-	[MANASTEAL_FILTER, 'chest'],
 	[SUGAR_FILTER, 'mainhand'],
 	[SUGAR_FILTER, 'offhand'],
 ];
 let SUGAR_LESSER_SET = [
 	[SUGAR_FILTER, 'mainhand'],
-	[PIERCE_FILTER, 'chest'],
 ];
 let DPS_SET = [
 	[FIRE_FILTER, 'mainhand'],
