@@ -341,7 +341,7 @@ if (SERVER_ID != "EU I") {
             }
         } else {
 			let FARM = FARM_LOCATION();
-            if (character.map != FARM.map || distance_to_point(FARM.x, FARM.y) > 100) {
+            if (character.map != FARM.map || distance_to_point(FARM.x, FARM.y) > 2) {
                 move_to(FARM);
             } else {
 				INDEX++;
