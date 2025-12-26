@@ -70,7 +70,7 @@ if (SERVER_ID != "EU I") {
         return await Promise.race([TIMEOUT_PROMISE, promise]);
     };
 
-    Mover.init(smart, G, smart_move);
+    Mover.init(smart, G, smart_move, true);
 
     function distance_to_point(x, y) {
         return Math.hypot(character.real_x - x, character.real_y - y);
@@ -161,8 +161,10 @@ if (SERVER_ID != "EU I") {
             if (character.map != FARM.map || distance_to_point(FARM.x, FARM.y) > 100) {
                 move_to(FARM);
             } else {
-				INDEX++;
-				INDEX %= G.maps.main.monsters.length;
+				do {
+					INDEX++;
+					INDEX %= G.maps.main.monsters.length;
+				} while(G.maps.main.monsters[INDEX].boundary == null)
             }
         }
         await sleep(10);
