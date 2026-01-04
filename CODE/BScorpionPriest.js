@@ -1095,12 +1095,12 @@ async function farm(location) {
 		}
 		let distance_from_target = distance(attack_target, character);
 		if (distance_from_target < character.range) {
-			if (can_use('curse', NOW)) {
-				curse(attack_target.id);
-				await parent.push_deferred('curse');
-			}
 			switch (character.ctype) {
 				case 'priest':
+					if (can_use('curse', NOW)) {
+						curse(attack_target.id);
+						await parent.push_deferred('curse');
+					}
 					if (
 						can_use('darkblessing', NOW) &&
 						!afflicted('darkblessing') &&
