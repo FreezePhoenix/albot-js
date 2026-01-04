@@ -983,9 +983,9 @@ const LOOP = async () => {
 		NOW = performance.now();
 
 		if (character.name == 'Geoffriel') {
-			await sleep(Math.max(100, Math.ceil(ms_until('attack', NOW))));
+			await sleep(Math.max(0, Math.ceil(Math.min(ms_until('attack', NOW), ms_until('attack', NOW)))));
 		} else if (character.s.sugarrush) {
-			await sleep(Math.ceil(Math.max(0, ms_until('attack', NOW))));
+			await sleep(Math.max(0, Math.ceil(ms_until('attack', NOW))));
 		} else {
 			await sleep(
 				Math.max(0, Math.ceil(Math.max(0, ms_until('attack', NOW)))) + 1
@@ -1097,6 +1097,7 @@ async function farm(location) {
 		if (distance_from_target < character.range) {
 			if (can_use('curse', NOW)) {
 				curse(attack_target.id);
+				await parent.push_deferred('curse');
 			}
 			switch (character.ctype) {
 				case 'priest':
