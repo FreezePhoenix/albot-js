@@ -983,7 +983,7 @@ const LOOP = async () => {
 		NOW = performance.now();
 
 		if (character.name == 'Geoffriel') {
-			await sleep(Math.max(0, Math.ceil(Math.min(ms_until('attack', NOW), ms_until('attack', NOW)))));
+			await sleep(Math.max(0, Math.ceil(Math.min(ms_until('attack', NOW), ms_until('curse', NOW)))));
 		} else if (character.s.sugarrush) {
 			await sleep(Math.max(0, Math.ceil(ms_until('attack', NOW))));
 		} else {
