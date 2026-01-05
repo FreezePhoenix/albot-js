@@ -1098,8 +1098,12 @@ async function farm(location) {
 			switch (character.ctype) {
 				case 'priest':
 					if (can_use('curse', NOW)) {
-						curse(attack_target.id);
-						await parent.push_deferred('curse');
+						try {
+							curse(attack_target.id);
+							await parent.push_deferred('curse');	
+						} catch (e) {
+							await sleep(100);
+						}
 					}
 					if (
 						can_use('darkblessing', NOW) &&
