@@ -1106,7 +1106,7 @@ async function farm(location) {
 						try {
 							curse(attack_target.id);
 							await parent.push_deferred('curse');	
-						} catch (e) {:
+						} catch (e) {
 							console.log(character.name, e);
 							await sleep(100);
 						}
