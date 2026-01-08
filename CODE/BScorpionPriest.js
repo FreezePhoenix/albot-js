@@ -1043,7 +1043,6 @@ if (character.name == 'Rael' || character.name == 'Raelina') {
 	}, 400);
 	parent.socket.on('hit', (data) => {
 		if (data.hid == character.name && data.source == 'attack') {
-			reduce_cooldown("attack", (character.ping ?? 0) * 0.95);
 			ensure_equipped_batch(DPS_SET);
 		}
 	});
@@ -1066,11 +1065,6 @@ if (character.name == 'Rael' || character.name == 'Raelina') {
 			}
 		}
 	}, 500);
-	parent.socket.on('hit', (data) => {
-		if (data.hid == character.name && data.source == 'curse') {
-			reduce_cooldown("curse", (character.ping ?? 0) * 0.95);
-		}
-	});
 }
 let LOGGED = 0;
 let UNEQUIP_OFFHAND = {	slot: 'offhand' };
@@ -1107,6 +1101,7 @@ async function farm(location) {
 						try {
 							curse(attack_target.id);
 							await parent.push_deferred('curse');	
+							reduce_cooldown("curse", (character.ping ?? 0) * 0.95);
 						} catch (e) {
 							console.log(character.name, e);
 							await sleep(100);
@@ -1178,6 +1173,8 @@ async function farm(location) {
 								// );
 								ensure_equipped_batch(DPS_SET);
 								parent.resolve_deferred('attack', undefined);
+							} else {
+								reduce_cooldown("attack", (character.ping ?? 0) * 0.95);
 							}
 						} else if(Targeter.WillDieFromFire(attack_target)) {
 							await sleep(100);
