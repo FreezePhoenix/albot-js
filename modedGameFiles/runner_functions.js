@@ -1,6 +1,7 @@
 function reduce_cooldown(a, b) {
-  parent.next_skill[a] &&
-    parent.skill_timeout(a, -mssince(parent.next_skill[a]) - b);
+  if(parent.next_skill[a]) {
+  	parent.next_skill[a] -= b;
+  }
 }
 var G = parent.G,
   safeties = true;
