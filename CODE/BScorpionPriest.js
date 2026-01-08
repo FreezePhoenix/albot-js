@@ -1106,7 +1106,8 @@ async function farm(location) {
 						try {
 							curse(attack_target.id);
 							await parent.push_deferred('curse');	
-						} catch (e) {
+						} catch (e) {:
+							console.log(character.name, e);
 							await sleep(100);
 						}
 					}
@@ -1187,6 +1188,7 @@ async function farm(location) {
 								ensure_equipped_batch(DPS_SET);
 								break;
 							case 'cooldown':
+								console.log(character.name, e);
 								await sleep(e.ms);
 								ensure_equipped_batch(DPS_SET);
 								return;
