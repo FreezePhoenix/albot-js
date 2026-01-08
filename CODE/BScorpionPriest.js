@@ -658,16 +658,20 @@ if (character.ctype == 'warrior') {
 	}
 	
 	parent.socket.on('drop', (data) => {
-		if(can_use("temporalsurge", NOW) && IS_TURN_TO_SURGE) {
-			if(character.name == "Rael") {
-				send_cm("Raelina", 'surged');
-			} else {
-				send_cm("Geoffriel", 'surged');
+		if(IS_TURN_TO_SURGE) {
+			if(can_use("temporalsurge", NOW)) {
+				if(character.name == "Rael") {
+					send_cm("Raelina", 'surged');
+				} else {
+					send_cm("Geoffriel", 'surged');
+				}
+				IS_TURN_TO_SURGE = false;
+				ensure_equipped(TEMPORAL_ORB, 'orb');
+				parent.socket.emit("skill", { name: 'temporalsurge' });
+				ensure_equipped(DPS_ORB_FILTER, 'orb');
 			}
-			IS_TURN_TO_SURGE = false;
-			ensure_equipped(TEMPORAL_ORB, 'orb');
-			parent.socket.emit("skill", { name: 'temporalsurge' });
-			ensure_equipped(DPS_ORB_FILTER, 'orb');
+		} else {
+			console.log(character.name, "Missed surge");
 		}
 	});
 	const JACKO_FILTER = ItemFilter.ofName('jacko').build();
@@ -952,11 +956,15 @@ if (character.name == 'Geoffriel') {
 			return;
 		}
 		if (distance_to_point(x, y) < 200) {
-			if(can_use("temporalsurge", NOW) && IS_TURN_TO_SURGE) {
-				send_cm("Rael", 'surged');
-				IS_TURN_TO_SURGE = false;
-				ensure_equipped(TEMPORAL_ORB, 'orb');
-				parent.socket.emit("skill", { name: 'temporalsurge' });
+			if(IS_TURN_TO_SURGE) {
+				if(can_use("temporalsurge", NOW)) {
+					send_cm("Rael", 'surged');
+					IS_TURN_TO_SURGE = false;
+					ensure_equipped(TEMPORAL_ORB, 'orb');
+					parent.socket.emit("skill", { name: 'temporalsurge' });
+				} else {
+					console.log(character.name, "Missed surge");
+				}
 			}
 			let index_of_booster = character.items.findIndex(BOOSTER_FILTER);
 			ensure_equipped_batch(GOLD_SET);
