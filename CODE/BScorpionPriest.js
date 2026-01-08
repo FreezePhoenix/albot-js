@@ -1043,6 +1043,7 @@ if (character.name == 'Rael' || character.name == 'Raelina') {
 	}, 400);
 	parent.socket.on('hit', (data) => {
 		if (data.hid == character.name && data.source == 'attack') {
+			reduce_cooldown("attack", (character.ping ?? 0) * 0.95);
 			ensure_equipped_batch(DPS_SET);
 		}
 	});
