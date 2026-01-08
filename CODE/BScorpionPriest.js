@@ -669,9 +669,9 @@ if (character.ctype == 'warrior') {
 				ensure_equipped(TEMPORAL_ORB, 'orb');
 				parent.socket.emit("skill", { name: 'temporalsurge' });
 				ensure_equipped(DPS_ORB_FILTER, 'orb');
+			} else {
+				console.log(character.name, "Missed surge");
 			}
-		} else {
-			console.log(character.name, "Missed surge");
 		}
 	});
 	const JACKO_FILTER = ItemFilter.ofName('jacko').build();
