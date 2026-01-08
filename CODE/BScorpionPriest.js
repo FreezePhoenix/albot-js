@@ -1065,6 +1065,11 @@ if (character.name == 'Rael' || character.name == 'Raelina') {
 			}
 		}
 	}, 500);
+	parent.socket.on('hit', (data) => {
+		if (data.hid == character.name && data.source == 'curse') {
+			reduce_cooldown("curse", (character.ping ?? 0) * 0.95);
+		}
+	});
 }
 let LOGGED = 0;
 let UNEQUIP_OFFHAND = {	slot: 'offhand' };
