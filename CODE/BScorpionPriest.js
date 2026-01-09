@@ -113,6 +113,8 @@ let mana = 'mpot1',
 // /*
 // */
 let to_sell = new Set([
+	'sweaterhs',
+	'iceskates',
 	'pmace',
 	'shield',
 	'intamulet',
