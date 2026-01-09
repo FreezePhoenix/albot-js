@@ -1,53 +1,22 @@
-const { Adapter } = await require("Adapter.js");
+const { Adapter, CompleteAdapter } = await require("Adapter.js", "CompleteAdapter.js");
 
+// for skills of form { name }
+const NAME_ADAPTER = CompleteAdapter("name");
 // for skills of form { name, id }
-const TARGET_ADAPTER = Adapter("id");
+const NAME_ID_ADAPTER = CompleteAdapter("name", "id");
 
-const CURSE_ADAPTABLE = {
-  name: "curse",
-  id: 0,
-};
-exports.curse = (id) =>
-  parent.socket.emit("skill", TARGET_ADAPTER(CURSE_ADAPTABLE, id));
+exports.curse = (id) => parent.socket.emit("skill", NAME_ID_ADAPTER("curse", id));
 
-const ZAP_ADAPTABLE = {
-  name: "zapperzap",
-  id: 0,
-};
-exports.zap = (id) =>
-  parent.socket.emit("skill", TARGET_ADAPTER(ZAP_ADAPTABLE, id));
+exports.zap = (id) => parent.socket.emit("skill", NAME_ID_ADAPTER("zapperzap", id));
 
-const TAUNT_ADAPTABLE = {
-  name: "taunt",
-  id: 0,
-};
-exports.taunt = (id) =>
-  parent.socket.emit("skill", TARGET_ADAPTER(TAUNT_ADAPTABLE, id));
+exports.taunt = (id) => parent.socket.emit("skill", NAME_ID_ADAPTER("taunt", id));
 
-const ABSORB_ADAPTABLE = {
-  name: "absorb",
-  id: 0,
-};
-exports.absorb = (id) =>
-  parent.socket.emit("skill", TARGET_ADAPTER(ABSORB_ADAPTABLE, id));
+exports.absorb = (id) => parent.socket.emit("skill", NAME_ID_ADAPTER("absorb", id));
 
-const WARCRY = {
-  name: "warcry",
-};
-exports.warcry = () => parent.socket.emit("skill", WARCRY);
+exports.warcry = () => parent.socket.emit("skill", NAME_ADAPTER("warcry"));
 
-const CLEAVE = {
-  name: "cleave",
-};
-exports.cleave = () => parent.socket.emit("skill", CLEAVE);
+exports.cleave = () => parent.socket.emit("skill", NAME_ADAPTER("cleave"));
 
-const HARDSHELL = {
-  name: "hardshell",
-};
-exports.hardshell = () => parent.socket.emit("skill", HARDSHELL);
+exports.hardshell = () => parent.socket.emit("skill", NAME_ADAPTER("hardshell"));
 
-const DARKBLESSING = {
-  name: "darkblessing",
-};
-
-exports.darkblessing = () => parent.socket.emit("skill", DARKBLESSING);
+exports.darkblessing = () => parent.socket.emit("skill", NAME_ADAPTER("darkblessing"));
