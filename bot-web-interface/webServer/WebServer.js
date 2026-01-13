@@ -16,7 +16,7 @@ class WebServer {
         app.use('/LIB', express.static(__dirname + '/../../LIB'));
         app.use('/', express.static(__dirname + '/public'));
 
-        server.listen(3000, function () {
+        server.listen(3000, function() {
             console.log('WebServer listening on port ' + port + '.');
         });
     };
@@ -34,43 +34,65 @@ class SocketServer {
         this.io = null;
     };
     flush(id, modifications) {
-        this.io.emit("flush", { id, modifications });
+        this.io.emit("flush", {
+            id,
+            modifications
+        });
+    };
+    flushSingular(socket, id, modifications) {
+        socket.emit("flush", {
+            id,
+            modifications
+        });
     };
     createInterface(dataExchanger) {
-        this.io.emit("createBotUI", { id: dataExchanger.id });
+        this.io.emit("createBotUI", {
+            id: dataExchanger.id
+        });
+    };
+    createInterfaceSingular(socket, dataExchanger) {
+        socket.emit("createBotUI", {
+            id: dataExchanger.id
+        });
     };
     removeInterface(dataExchanger) {
-        this.io.emit("removeBotUI", {id:dataExchanger.id});
+        this.io.emit("removeBotUI", {
+            id: dataExchanger.id
+        });
     };
     getPublisher() {
         return this.publisher;
     };
     on(message, handler) {
-      if (listeners[message]) {
-        listeners[message].push(handler);
-      } else {
-        listeners[message] = [handler];
-      }
+        if (listeners[message]) {
+            listeners[message].push(handler);
+        } else {
+            listeners[message] = [handler];
+        }
     }
     openSocket() {
         this.io = Server(server);
         this.io.sockets.on('connection', (socket) => {
-          socket.emit("setup", {
+            socket.emit("setup", {
                 dataList: [],
                 structure: this.publisher.structure
             });
-          for(let x of this.publisher.dataSources) {
-            this.createInterface(x);
-            this.flush(x.id, Object.entries(x.getData()));
-          }
-          socket.on('command', (data) => {
-          let is_authed = process.env.master_auth_key != null && data.auth_key == process.env.master_auth_key;
-          if (is_authed) {
-            listeners['command'].forEach(func => func(Object.assign(data, {admin: true})));
-          } else {
-            listeners['command'].forEach(func => func(Object.assign(data, {admin: false})));
-          }
-        })
+            for (let x of this.publisher.dataSources) {
+                this.createInterfaceSingular(socket, x);
+                this.flushSingular(socket, x.id, Object.entries(x.getData()));
+            }
+            socket.on('command', (data) => {
+                let is_authed = process.env.master_auth_key != null && data.auth_key == process.env.master_auth_key;
+                if (is_authed) {
+                    listeners['command'].forEach(func => func(Object.assign(data, {
+                        admin: true
+                    })));
+                } else {
+                    listeners['command'].forEach(func => func(Object.assign(data, {
+                        admin: false
+                    })));
+                }
+            })
         });
     };
 }
