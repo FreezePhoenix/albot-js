@@ -922,7 +922,7 @@ if (character.name == 'Geoffriel') {
 		[D_RING1_FILTER, 'ring1'],
 		[D_WINGS_FILTER, 'cape'],
 		[D_OFFHAND_FILTER, 'offhand'],
-		[D_CHEST_FILTER, 'chest'],
+		[DEBUFF_HP_CHEST, 'chest'],
 		[D_STAFF_FILTER, 'mainhand'],
 		[D_AMULET_FILTER, 'amulet'],
 		[D_EARRING_FILTER, 'earring1'],
