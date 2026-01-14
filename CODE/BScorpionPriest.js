@@ -1019,7 +1019,7 @@ let AXE_FILTER = new ItemFilter()
 	.level('7', '>=')
 	.build();
 // /*
-let PRIEST_DPS_SET = [[D_CHEST_FILTER, 'chest']];
+let PRIEST_DPS_SET = [[DEBUFF_HP_CHEST, 'chest']];
 let PRIEST_DEBUFF_SET = [[DEBUFF_HP_CHEST, 'chest']];
 let AXE_SET = [[AXE_FILTER, 'mainhand']]
 let SUGAR_SET = [
