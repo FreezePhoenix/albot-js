@@ -50,7 +50,7 @@ function swap(a, b) {
 let enabled = true;
 (async () => {
 	main: while (true) {
-		if (enabled && character.map != "bank" && character.map != "bank_b") {
+		if (enabled && character.map != "bank" && character.map != "bank_b" && character.esize) {
 			for (let i = 0; i < FILTERS.length; i++) {
 				let [name, quantity, keep] = FILTERS[i];
 
