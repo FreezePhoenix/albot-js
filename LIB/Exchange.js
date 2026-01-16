@@ -16,7 +16,11 @@ function P_EXCHANGE(item_num) {
 			place: 'exchange',
 		});
 	} else {
-		parent.socket.emit('skill', {name: "massexchange"});
+		if(character.mp > 300) {
+			parent.socket.emit('skill', {name: "massexchangepp"});
+		} else if(character.mp > 50) {
+			parent.socket.emit('skill', {name: "massexchange"});
+		}
 		parent.socket.emit('exchange', EXCHANGE_ADAPTABLE(item_num, character.items[item_num].q));
 		return parent.push_deferred('exchange');
 	}
