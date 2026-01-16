@@ -1,5 +1,5 @@
 const SCRIPT = "BScorpionPriest.js"
-const SERVER = "US III";
+const SERVER = "US II";
 let RUN_ALL = true;
 let RUN_MERCH = true;
 
@@ -31,8 +31,8 @@ module.exports = {
           {
               "characterName": "AriaHarper",
               "characterId": "5513766260178944",
-              "runScript": "BScorpAngyMerch.js",
-              "server": "US III"
+              "runScript": "Boar.js",
+              "server": "US II"
           }, // */
           {
               "characterName": "Rael",
