@@ -6,6 +6,8 @@ const EXCHANGE_ADAPTABLE = CompleteAdapter('item_num', 'q');
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+let min_mp = 300;
+
 function P_EXCHANGE(item_num) {
 	if (character.q.exchange) {
 		return Promise.resolve({
@@ -16,10 +18,8 @@ function P_EXCHANGE(item_num) {
 			place: 'exchange',
 		});
 	} else {
-		if(character.mp > 300) {
+		if(character.mp > min_mp) {
 			parent.socket.emit('skill', {name: "massexchangepp"});
-		} else if(character.mp > 50) {
-			parent.socket.emit('skill', {name: "massexchange"});
 		}
 		parent.socket.emit('exchange', EXCHANGE_ADAPTABLE(item_num, character.items[item_num].q));
 		return parent.push_deferred('exchange');
@@ -76,6 +76,10 @@ let enabled = true;
 
 module.exports = (name, quantity = 1, keep = 0) => {
 	FILTERS.push([name, quantity, keep]);
+};
+
+module.exports.set_min_mp = (min) => {
+	min_mp = min;
 };
 
 module.exports.reset = () => {
