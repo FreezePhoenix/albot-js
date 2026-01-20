@@ -7,6 +7,7 @@ var dataSourcesCount = 0;
 
 class Publisher {
 	constructor(server) {
+		this.structuremap = new Map();
 		this.structure = [];
 		this.dataList = [];
 		this.dataSources = [];
@@ -16,7 +17,7 @@ class Publisher {
 		this.server.flush(id, modifications);
 	}
 	createInterface() {
-		let dataSource = new DataExchanger(this, dataSourcesCount++);
+		let dataSource = new DataExchanger(this, dataSourcesCount++, this.structuremap);
 		this.dataSources.push(dataSource);
 		this.server.createInterface(dataSource);
 		this.dataList.push(dataSource.getData());
@@ -41,6 +42,10 @@ class Publisher {
 	}
 	setStructure(structure) {
 		this.structure = structure;
+		this.structuremap.clear();
+		for(let i = 0; i < structure.length; i++) {
+			this.structuremap.set(structure[i].name, i);
+		}
 	}
 }
 

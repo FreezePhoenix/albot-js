@@ -4,21 +4,19 @@ const util = require("util");
  */
 
 class DataExchanger {
-    constructor(publisher, id) {
+    constructor(publisher, id, structuremap) {
         this.publisher = publisher;
         this.id = id;
         this.dataSource = {}
-        this.modifications = []
-    }
-    setDataSource(val) {
-        this.dataSource = val;
+        this.modifications = [];
+        this.structuremap = structuremap;
     }
     getData() {
         return this.dataSource;
     };
     pushData(name, value) {
         if(!util.isDeepStrictEqual(this.dataSource[name], value)) {
-            this.modifications.push([name, value]);
+            this.modifications.push([this.structuremap.get(name), value]);
             this.dataSource[name] = value;
         }
     };

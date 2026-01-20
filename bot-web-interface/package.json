@@ -16,7 +16,9 @@
     "express": "^4.15.3",
     "extend": "^3.0.1",
     "pngjs-image": "^0.11.7",
-    "socket.io": "^2.0.3",
-    "socket.io-client": "^2.0.3"
+    "socket.io": "4.8.1",
+    "socket.io-client": "4.8.1",
+    "socket.io-msgpack-parser": "3.x",
+    "@msgpack/msgpack": "3.1.3"
   }
 }

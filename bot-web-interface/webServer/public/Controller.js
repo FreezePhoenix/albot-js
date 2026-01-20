@@ -1,96 +1,68 @@
 class Controller {
-    botAmount = 0;
-    dataIDs = null;
     structure = null;
     botUIs = {};
     socket = null;
     start() {
-        var self = this;
-        var host = document.location.hostname;
+        let host = document.location.hostname;
         let protocol = document.location.protocol
-
-        var socket = io(protocol + "//" + host, {
-
+        let port = document.location.port == '' ? '' : (':' + document.location.port);
+        
+        let socket = io(protocol + "//" + host + port, {
+            parser,
             transports: ["websocket"],
             autoConnect: false
         });
-        console.log(socket)
-
-        socket.on("connect", () => {
-            socket.emit("auth", { token: "all" });
-        });
 
         socket.on("setup", (data) => {
-            for (let id in self.botUIs) {
-                self.botUIs[id].destroy();
-                delete self.botUIs[id];
+            console.log(data);
+            for (let id in this.botUIs) {
+                this.botUIs[id].destroy();
+                delete this.botUIs[id];
             }
             /**
              * @typedef {object} data
              * @typedef {Array<int>} data.dataIDs
              * @typedef {Array<object>} data.structure;
              */
-            console.log(data)
-            self.dataList = data.dataList;
-            self.structure = data.structure;
+            this.dataList = data.dataList;
+            this.structure = data.structure;
 
-            for (let i in self.dataList) {
-                var botUI = new BotUi(i, self.structure);
+            for (let i in this.dataList) {
+                var botUI = new BotUi(i, this.structure);
                 botUI.create();
-                self.botUIs[i] = botUI;
+                this.botUIs[i] = botUI;
             }
-            for (let i in self.dataList) {
-                if (self.botUIs[i])
-                    self.botUIs[i].update(self.dataList[i]);
+            for (let i in this.dataList) {
+                if (this.botUIs[i])
+                    this.botUIs[i].update(this.dataList[i]);
             }
 
         });
 
-        socket.on("updateStructure", function (data) {
-            //TODO: implement
-            return;
-
-            self.structure = data.structure;
-
-            for (var j in self.botUIs) {
-
-            }
-
-            for (var i in self.dataIDs) {
-                var botUI = new BotUi(self.dataIDs[i], self.structure);
-                botUI.create();
-                self.botUIs[self.dataIDs[i]] = botUI;
-            }
-        });
-
-        socket.on('auth_success', (data) => {
-            console.log(data)
-        });
-
-        socket.on("flush", (data) => {
-            if (self.botUIs[data.id]) {
-                data.modifications.forEach(([name, value]) => {
-                    self.botUIs[data.id].data[name] = value;
+        socket.on("flush", ([id, modifications]) => {
+            if (this.botUIs[id]) {
+                modifications.forEach(([index, value]) => {
+                    this.botUIs[id].data[this.botUIs[id].structure[index].name] = value;
                 });
-                self.botUIs[data.id].render();
+                this.botUIs[id].render();
             }
         });
 
         socket.on("removeBotUI", (data) => {
-            if (self.botUIs[data.id]) {
-                self.botUIs[data.id].destroy();
-                delete self.botUIs[data.id];
+            if (this.botUIs[data.id]) {
+                this.botUIs[data.id].destroy();
+                delete this.botUIs[data.id];
             }
         });
 
         socket.on("createBotUI", (data) => {
-            if (self.botUIs[data.id]) {
-                self.botUIs[data.id].destroy();
-                delete self.botUIs[data.id];
+            if (this.botUIs[data.id]) {
+                this.botUIs[data.id].destroy();
+                delete this.botUIs[data.id];
             }
-            var botUI = new BotUi(data.id, self.structure);
+            var botUI = new BotUi(data.id, this.structure);
             botUI.create();
-            self.botUIs[data.id] = botUI;
+            this.botUIs[data.id] = botUI;
         });
 
         socket.open();

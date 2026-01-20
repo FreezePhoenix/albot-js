@@ -1777,8 +1777,15 @@ function add_monster(a) {
 	d.mtype = a.type;
 	d.interactive = true;
 	d.buttonMode = true;
-	d.width = 24;
-	d.height = 24;
+	if (G.dimensions[a.type]) {
+		[d.width, d.height] = G.dimensions[a.type];
+	} else {
+		d.width = d.height = 24;
+	}
+	if (def.size) {
+		d.width = Math.round(d.width * def.size);
+		d.height = Math.round(d.height * def.size);
+	}
 	return d;
 }
 

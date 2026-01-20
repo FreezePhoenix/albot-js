@@ -8,6 +8,9 @@ var server = require('http').createServer(app);
 var cors = require("cors");
 var compression = require("compression");
 
+
+var parser = require("./public/parser/socket.io-custom-parser.js");
+
 var socketOpen = false;
 class WebServer {
     openSocket(port = defaultPort) {
@@ -34,16 +37,16 @@ class SocketServer {
         this.io = null;
     };
     flush(id, modifications) {
-        this.io.emit("flush", {
+        this.io.emit("flush", [
             id,
             modifications
-        });
+        ]);
     };
     flushSingular(socket, id, modifications) {
-        socket.emit("flush", {
+        socket.emit("flush", [
             id,
             modifications
-        });
+        ]);
     };
     createInterface(dataExchanger) {
         this.io.emit("createBotUI", {
@@ -71,7 +74,9 @@ class SocketServer {
         }
     }
     openSocket() {
-        this.io = Server(server);
+        this.io = Server(server, {
+            parser
+        });
         this.io.sockets.on('connection', (socket) => {
             socket.emit("setup", {
                 dataList: [],
@@ -79,7 +84,10 @@ class SocketServer {
             });
             for (let x of this.publisher.dataSources) {
                 this.createInterfaceSingular(socket, x);
-                this.flushSingular(socket, x.id, Object.entries(x.getData()));
+                this.flushSingular(socket, x.id, Object.entries(x.getData()).map(a => [
+                    this.publisher.structuremap.get(a[0]),
+                    a[1]
+                ]));
             }
             socket.on('command', (data) => {
                 let is_authed = process.env.master_auth_key != null && data.auth_key == process.env.master_auth_key;
