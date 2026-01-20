@@ -611,14 +611,8 @@ Game.prototype.init = async function () {
 				);
 				// send_bwi_update("status", character.rip ? "DEAD" : "ALIVE");
 				send_bwi_update('map', character.map);
-				send_bwi_update('cpu', [
-					~~(cpu_usage * 100) / 100,
-					Math.trunc(cpu_usage * 100) / 100,
-				]);
-				send_bwi_update('heap', [
-					(~~((memory.heapUsed + memory.arrayBuffers) / 1024 ** 2 * 100) / 100).toFixed(2) + 'MB',
-          100
-				]);
+				send_bwi_update('cpu', ~~(cpu_usage * 100) / 100);
+				send_bwi_update('heap', (~~((memory.heapUsed + memory.arrayBuffers) / 1024 ** 2 * 100) / 100).toFixed(2) + 'MB');
 				send_bwi_update('itempd', itempd);
 				send_bwi_update('tilLevelUp', remaining);
 				// send_bwi_update("activity", [activity_state, activity_fill]);
@@ -738,11 +732,11 @@ Game.prototype.trigger = function (event, args) {
 	}
 };
 
-Game.prototype.emit = function (event, arguments) {
+Game.prototype.emit = function (event, args) {
 	if (typeof event == 'string') {
 		if (this.events[event]) {
 			this.events[event].forEach(function (current) {
-				current.apply(Array.from(arguments).slice(1));
+				current.apply(Array.from(args).slice(1));
 			});
 		}
 	}

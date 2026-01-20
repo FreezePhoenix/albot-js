@@ -120,10 +120,11 @@ class BotUi {
 				case 'outOfMax':
 				case 'progressBar':
 					if(typeof value == "object") {
-						elements[4].innerText = value[0] + "%";
+						
+						elements[4].innerText = value[0];
 						elements[5].style.width = value[1] + "%";
 					} else {
-						elements[4].innerText = value;
+						elements[4].innerText = (typeof value == 'number') ? value + "%" : value;
 						elements[5].style.width = value + "%";
 					}
 					break;

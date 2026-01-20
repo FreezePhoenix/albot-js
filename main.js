@@ -190,12 +190,11 @@ async function main() {
 			{ name: 'itempd', type: 'text', label: 'Item/D' },
 			{ name: 'xpPH', type: 'text', label: 'XP/H' },
 			{ name: 'tilLevelUp', type: 'text', label: 'ETLU' },
-			{ name: 'inventory', type: 'object' },
 			{ name: 'script', type: 'text', label: 'Script' },
 			{ name: 'ping', type: 'text', label: 'Ping' },
 			{ name: 'map', type: 'text', label: 'Map' },
-			{ name: 'cpu', type: 'outOfMax', label: 'CPU' },
-			{ name: 'heap', type: 'outOfMax', label: 'memory' },
+			{ name: 'cpu', type: 'progressBar', label: 'CPU' },
+			{ name: 'heap', type: 'text', label: 'Memory' },
 		]);
 	}
 	console.log('Everything passed...');
