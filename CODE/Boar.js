@@ -77,12 +77,12 @@ Dismantle(
 );
 
 setInterval(() => {
-	if (character.party != undefined && character.party != 'AriaHarper') {
+	if (character.party != undefined && !character.party?.startsWith?.("earth")) {
 		parent.socket.emit('party', { event: 'leave' });
 	}
-	// if (character.party != 'AriaHarper') {
-	// 	parent.socket.emit('party', { event: 'invite', name: 'Geoffriel' });
-	// }
+	if(character.party == undefined) {
+		parent.socket.emit('party',{event:'request',name:'earthWar'});
+	}
 }, 30000);
 
 Mover.init(smart, G, smart_move);
