@@ -10,6 +10,10 @@ class BotUi {
 	constructor(id, structure) {
 		this.id = id;
 		this.structure = structure;
+		this.elements = new Array(this.structure.length);
+		for(let i = 0; i < this.elements.length; i++) {
+			this.elements[i] = [];
+		}
 	}
 
 	destroy() {
@@ -23,7 +27,7 @@ class BotUi {
 		var html = '';
 		for (var i in this.structure) {
 			let struct = this.structure[i];
-			let elements = struct.elements = [];
+			let elements = this.elements[i];
 			var { name, label, type } = struct;
 			switch (type) {
 				case 'text':
@@ -86,6 +90,7 @@ class BotUi {
 					for(let i = 0; i < bbar.length; i++) {
 						bbar[i].style.backgroundColor = bbaroptions.colors[i];
 						bbar[i].title = bbaroptions.labels[i];
+						bbar[i].classList.add('bar');
 						bbarborder.appendChild(bbar[i]);
 					}
 					bbarwrap.appendChild(bbarborder);
@@ -106,26 +111,31 @@ class BotUi {
 			var name = this.structure[i].name;
 			var type = this.structure[i].type;
 			var value = this.data[name];
+			let elements = this.elements[i];
 			if (value === undefined) continue;
 			switch (type) {
 				case 'text':
-					this.structure[i].elements[2].innerText = value;
+					elements[2].innerText = value;
 					break;
 				case 'outOfMax':
 				case 'progressBar':
-					this.structure[i].elements[4].innerText = value + "%";
-					this.structure[i].elements[5].style.width = value + "%";
+					if(typeof value == "object") {
+						elements[4].innerText = value[0] + "%";
+						elements[5].style.width = value[1] + "%";
+					} else {
+						elements[4].innerText = value;
+						elements[5].style.width = value + "%";
+					}
 					break;
 				case 'breakdownBar':
 					let sum = 0;
-					for (let i = 0; i < value.length; i++) {
-						sum += value[i];
+					for (let j = 0; j < value.length; j++) {
+						sum += value[j];
 					}
-					for (let i = 0; i < value.length; i++) {
-						this.structure[i].elements[5 + i].style.width = (value[i] / sum) * 100 + '%';
+					for (let j = 0; j < value.length; j++) {
+						elements[5 + j].style.width = (value[j] / sum) * 100 + '%';
 					}
-					this.structure[i].elements[4].innerText = sum;
-					VALUE.textContent = sum;
+					elements[4].innerText = sum;
 					break;
 				case 'object':
 					if (window[name + value.key]) {
