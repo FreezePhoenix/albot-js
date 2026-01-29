@@ -572,7 +572,7 @@ parent.socket.on('server_message', (data) => {
 });
 parent.socket.on('request', ({ name }) => {
 	console.log('Party Request');
-	if (to_party.indexOf(name) != -1 && name != merchant) {
+	if (group.indexOf(name) != -1) {
 		accept_party_request(name);
 	}
 });
