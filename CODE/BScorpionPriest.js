@@ -283,6 +283,7 @@ let to_send = new Set([
 	'essenceoffrost',
 	'redenvelopev4',
 	'greenenvelope',
+	'brownenvelope',
 	'5bucks',
 	'candy0v3',
 	'candy1v3',
