@@ -598,22 +598,13 @@ function init_demo() {
 }
 
 function init_socket() {
-	if (server_addr && port) {
+	if (server_addr && path) {
+		console.log(server_addr)
 		console.log(protocol, server_addr, port);
-		socket =
-			'https' == protocol
-				? new Socket('wss://' + server_addr + ':' + port, {
+		socket = new Socket('wss://' + server_addr, {
 						transports: ['websocket'],
 						autoConnect: false,
-						extraHeaders: {
-							'user-agent': 'AdventureLandBot: (v1.0.0)',
-							referer: 'http://adventure.land/',
-							'accept-language': 'en-US,en;q=0.5',
-						},
-				  })
-				: new Socket('ws://' + server_addr + ':' + port, {
-						transports: ['websocket'],
-						autoConnect: false,
+						path,
 						extraHeaders: {
 							'user-agent': 'AdventureLandBot: (v1.0.0)',
 							referer: 'http://adventure.land/',

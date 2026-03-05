@@ -19,7 +19,6 @@ let child_process = require('child_process'),
 	httpWrapper = new HttpWrapper(),
 	BotWebInterface = require('./bot-web-interface'),
 	fs = require('fs'),
-	http = require('http'),
 	userData = require('./userData.js'),
 	login = userData.login,
 	bots = userData.bots;
@@ -216,18 +215,19 @@ async function main() {
 	gameData = await httpWrapper.getGameData();
 	for (let bot of true_bots) {
 		let serverInfo = await httpWrapper.getServerInfo(bot.server);
+		console.log(serverInfo)
 		if (serverInfo == null) {
 			console.log(`Server not found: ${bot.server}`);
 			process.exit();
 		}
-		let { ip, port } = serverInfo;
+		let { address, path } = serverInfo;
 
 		let args = [
 			httpWrapper.sessionCookie,
 			httpWrapper.userAuth,
 			httpWrapper.userId,
-			ip,
-			port,
+			address,
+			path,
 			bot.characterId,
 			bot.runScript,
 			userData.config.botKey,

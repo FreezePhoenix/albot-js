@@ -14,7 +14,6 @@ class Controller {
         });
 
         socket.on("setup", (data) => {
-            console.log(data);
             for (let id in this.botUIs) {
                 this.botUIs[id].destroy();
                 delete this.botUIs[id];

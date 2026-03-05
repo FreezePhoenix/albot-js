@@ -5,7 +5,7 @@ class BotUi {
 	id = null;
 	structure = null;
 	element = null;
-	data = {};
+	data = [];
 
 	constructor(id, structure) {
 		this.id = id;

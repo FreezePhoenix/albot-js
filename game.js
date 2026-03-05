@@ -8,8 +8,8 @@ var LocalStorage = require('node-localstorage').LocalStorage;
 var DataWrapper = require('./DataWrapper');
 localStorage = new LocalStorage('./localStorage');
 var Game = function (
-	ip,
-	port,
+	address,
+	path,
 	characterId,
 	script,
 	botKey,
@@ -19,8 +19,8 @@ var Game = function (
 	name
 ) {
 	this.name = name;
-	this.ip = ip;
-	this.port = port;
+	this.address = address;
+	this.path = path;
 	this.userId = dataWrapper.userId;
 	this.characterId = characterId;
 	this.socketAuth = dataWrapper.userAuth;
@@ -67,7 +67,7 @@ Game.prototype.init = async function () {
 	var first_coords = false,
 		first_x = 0,
 		first_y = 0;
-	var protocol = 'http';
+	var protocol = 'https';
 
 	var code_active = false;
 	var current_map = '';
@@ -107,8 +107,8 @@ Game.prototype.init = async function () {
 
 	game = this;
 
-	server_addr = this.ip;
-	port = this.port;
+	server_addr = this.address;
+	path = this.path;
 	user_id = this.userId;
 	character_to_load = this.characterId;
 	user_auth = this.socketAuth;
