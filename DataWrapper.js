@@ -29,7 +29,6 @@ class DataWrapper {
 				GEO.x_lines.y0 = convert(GEO.x_lines.y0, BufferConstructor, ArrayConstructor);
 				GEO.x_lines.y1 = convert(GEO.x_lines.y1, BufferConstructor, ArrayConstructor);
 			}
-			console.log(GEO.x_lines.x);
 			if("y_lines" in GEO) {
 				GEO.y_lines.y = convert(GEO.y_lines.y, BufferConstructor, ArrayConstructor);
 				GEO.y_lines.x0 = convert(GEO.y_lines.x0, BufferConstructor, ArrayConstructor);
