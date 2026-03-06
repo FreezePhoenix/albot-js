@@ -26,13 +26,14 @@ class DataWrapper {
 			let GEO = data.geometry[x];
 			if("x_lines" in GEO) {
 				GEO.x_lines.x = convert(GEO.x_lines.x, BufferConstructor, ArrayConstructor);
-				GEO.x_lines.y0 = convert(GEO.x_lines.y1, BufferConstructor, ArrayConstructor);
-				GEO.x_lines.y1 = convert(GEO.x_lines.y0, BufferConstructor, ArrayConstructor);
+				GEO.x_lines.y0 = convert(GEO.x_lines.y0, BufferConstructor, ArrayConstructor);
+				GEO.x_lines.y1 = convert(GEO.x_lines.y1, BufferConstructor, ArrayConstructor);
 			}
+			console.log(GEO.x_lines.x);
 			if("y_lines" in GEO) {
 				GEO.y_lines.y = convert(GEO.y_lines.y, BufferConstructor, ArrayConstructor);
-				GEO.y_lines.x0 = convert(GEO.y_lines.x1, BufferConstructor, ArrayConstructor);
-				GEO.y_lines.x1 = convert(GEO.y_lines.x0, BufferConstructor, ArrayConstructor);
+				GEO.y_lines.x0 = convert(GEO.y_lines.x0, BufferConstructor, ArrayConstructor);
+				GEO.y_lines.x1 = convert(GEO.y_lines.x1, BufferConstructor, ArrayConstructor);
 			}
 			console.log("Compressed " + x);
 		}
