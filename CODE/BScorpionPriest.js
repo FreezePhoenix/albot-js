@@ -1024,13 +1024,13 @@ let PRIEST_DPS_SET = [[COAT_13, 'chest']];
 let PRIEST_DEBUFF_SET = PRIEST_DPS_SET;
 let AXE_SET = [[AXE_FILTER, 'mainhand']]
 let SUGAR_SET = [
-	[COAT_13, 'chest'],
+	[PIERCE_FILTER, 'chest'],
 	[SUGAR_FILTER, 'mainhand'],
 	[SUGAR_FILTER, 'offhand'],
 ];
 let SUGAR_LESSER_SET = [
 	[SUGAR_FILTER, 'mainhand'],
-	[COAT_13, 'chest'],
+	[PIERCE_FILTER, 'chest'],
 ];
 let DPS_SET;
 if (character.name == 'Rael') {
