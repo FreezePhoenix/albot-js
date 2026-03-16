@@ -353,8 +353,13 @@ const ensure_equipped_batch = async (filters_and_slots) => {
 };
 
 function follow_entity(entity, distance) {
-	let point = angleToPoint(entity.real_x, entity.real_y);
-	var position = pointOnAngle(entity, point, distance);
+	let center_y = entity.real_y - entity.height / 2; 
+	let center = {
+		x: entity.real_x,
+		y: center_y
+	};
+	let point = angleToPoint(entity.real_x, center_y);
+	var position = pointOnAngle(entity, center, point, distance);
 	position.map = character.map;
 	moving = false;
 	if (!character.moving) {
@@ -369,13 +374,13 @@ function angleToPoint(x, y) {
 	return Math.atan2(deltaY, deltaX);
 }
 
-function pointOnAngle(entity, angle, tdistance) {
+function pointOnAngle(entity, center, angle, tdistance) {
 	let cur_distance = distance(character, entity);
-	let cur_linear_distance = distance_to_point(entity.real_x, entity.real_y);
+	let cur_linear_distance = distance_to_point(center.x, center.y);
 	tdistance = tdistance + cur_linear_distance - cur_distance;
 	return {
-		x: entity.real_x + tdistance * Math.cos(angle),
-		y: entity.real_y + tdistance * Math.sin(angle),
+		x: center.x + tdistance * Math.cos(angle),
+		y: center.y + tdistance * Math.sin(angle),
 	};
 }
 
