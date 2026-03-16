@@ -1032,14 +1032,28 @@ let SUGAR_LESSER_SET = [
 	[SUGAR_FILTER, 'mainhand'],
 	[PIERCE_FILTER, 'chest'],
 ];
-let DPS_SET = [
-	[FIRE_FILTER, 'mainhand'],
-	[FIRE_FILTER, 'offhand'],
-];
+let DPS_SET;
 if (character.name == 'Rael') {
-	DPS_SET[0] = [
-		ItemFilter.ofName('fireblade').level('13', '==').build(),
-		'mainhand',
+	DPS_SET = [
+		[
+			ItemFilter.ofName('fireblade').level('13', '==').build(),
+			'mainhand',
+		],
+		[
+			ItemFilter.ofName('fireblade').level('11', '==').build(),
+			'mainhand',
+		],
+	];
+} else if(character.name == "Raelina") {
+	DPS_SET = [
+		[
+			ItemFilter.ofName('fireblade').level('11', '==').build(),
+			'mainhand',
+		],
+		[
+			ItemFilter.ofName('fireblade').level('10', '==').build(),
+			'mainhand',
+		],
 	];
 }
 // */
