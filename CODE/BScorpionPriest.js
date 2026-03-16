@@ -1024,7 +1024,7 @@ let PRIEST_DPS_SET = [[COAT_13, 'chest']];
 let PRIEST_DEBUFF_SET = PRIEST_DPS_SET;
 let AXE_SET = [[AXE_FILTER, 'mainhand']]
 let SUGAR_SET = [
-	[PIERCE_FILTER, 'chest'],
+	[MANASTEAL_FILTER, 'chest'],
 	[SUGAR_FILTER, 'mainhand'],
 	[SUGAR_FILTER, 'offhand'],
 ];
@@ -1176,6 +1176,15 @@ async function farm(location) {
 								sleep(character.ping * 4),
 							]);
 							if (character.s.sugarrush == null) {
+								if (
+									can_use('cleave', NOW) &&
+									character.mp > 1900 &&
+									attack_target.mtype == 'bscorpion'
+								) {
+									parent.socket.emit('unequip', UNEQUIP_OFFHAND);
+									ensure_equipped_batch(AXE_SET);
+									use_skill('cleave');
+								}
 								if (distance_from_target > 0) {
 									ensure_equipped_batch(SUGAR_SET);
 								}
