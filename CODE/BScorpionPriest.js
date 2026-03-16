@@ -1041,7 +1041,7 @@ if (character.name == 'Rael') {
 		],
 		[
 			ItemFilter.ofName('fireblade').level('11', '==').build(),
-			'mainhand',
+			'offhand',
 		],
 	];
 } else if(character.name == "Raelina") {
@@ -1052,7 +1052,7 @@ if (character.name == 'Rael') {
 		],
 		[
 			ItemFilter.ofName('fireblade').level('10', '==').build(),
-			'mainhand',
+			'offhand',
 		],
 	];
 }
