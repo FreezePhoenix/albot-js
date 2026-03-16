@@ -800,7 +800,7 @@ const NEEDS_PRIEST = new Lazy([...to_party, 'AriaHarper'])
 
 const afflicted = (status_name, entity = character) => status_name in entity.s;
 
-const DEBUFF_HP_CHEST = ItemFilter.ofName('coat').level('13', '==').build();
+const COAT_13 = ItemFilter.ofName('coat').level('13', '==').build();
 const D_RING1_FILTER = ItemFilter.ofName('zapper').build();
 const D_CHEST_FILTER = ItemFilter.ofName('vattire').level('9', '==').build();
 let USING_LUCK = false;
@@ -923,7 +923,7 @@ if (character.name == 'Geoffriel') {
 		[D_RING1_FILTER, 'ring1'],
 		[D_WINGS_FILTER, 'cape'],
 		[D_OFFHAND_FILTER, 'offhand'],
-		[DEBUFF_HP_CHEST, 'chest'],
+		[COAT_13, 'chest'],
 		[D_STAFF_FILTER, 'mainhand'],
 		[D_AMULET_FILTER, 'amulet'],
 		[D_EARRING_FILTER, 'earring1'],
@@ -1020,17 +1020,17 @@ let AXE_FILTER = new ItemFilter()
 	.level('7', '>=')
 	.build();
 // /*
-let PRIEST_DPS_SET = [[DEBUFF_HP_CHEST, 'chest']];
-let PRIEST_DEBUFF_SET = [[DEBUFF_HP_CHEST, 'chest']];
+let PRIEST_DPS_SET = [[COAT_13, 'chest']];
+let PRIEST_DEBUFF_SET = PRIEST_DPS_SET;
 let AXE_SET = [[AXE_FILTER, 'mainhand']]
 let SUGAR_SET = [
-	[MANASTEAL_FILTER, 'chest'],
+	[COAT_13, 'chest'],
 	[SUGAR_FILTER, 'mainhand'],
 	[SUGAR_FILTER, 'offhand'],
 ];
 let SUGAR_LESSER_SET = [
 	[SUGAR_FILTER, 'mainhand'],
-	[PIERCE_FILTER, 'chest'],
+	[COAT_13, 'chest'],
 ];
 let DPS_SET;
 if (character.name == 'Rael') {
@@ -1176,15 +1176,6 @@ async function farm(location) {
 								sleep(character.ping * 4),
 							]);
 							if (character.s.sugarrush == null) {
-								if (
-									can_use('cleave', NOW) &&
-									character.mp > 1900 &&
-									attack_target.mtype == 'bscorpion'
-								) {
-									parent.socket.emit('unequip', UNEQUIP_OFFHAND);
-									ensure_equipped_batch(AXE_SET);
-									use_skill('cleave');
-								}
 								if (distance_from_target > 0) {
 									ensure_equipped_batch(SUGAR_SET);
 								}
