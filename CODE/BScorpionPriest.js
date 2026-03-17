@@ -878,8 +878,8 @@ if (character.name == 'Geoffriel') {
 		.level('13', '==')
 		.build();
 	const D_EARRING_FILTER = ItemFilter.ofName('cearring')
-		.level('4', '==')
-		.build();
+		.level('4', '>=')
+		.build(); // Doesn't actually matter what order these are put on in.
 	const D_AMULET_FILTER = ItemFilter.ofName('intamulet')
 		.level('5', '==')
 		.build();
