@@ -881,7 +881,7 @@ if (character.name == 'Geoffriel') {
 		.level('4', '>=')
 		.build(); // Doesn't actually matter what order these are put on in.
 	const D_AMULET_FILTER = ItemFilter.ofName('intamulet')
-		.level('5', '==')
+		.level('6', '==')
 		.build();
 	const H_STAFF_FILTER = ItemFilter.ofName('lmace').level('9', '==').build();
 	const D_STAFF_FILTER = ItemFilter.ofName('lmace').level('9', '==').build();
