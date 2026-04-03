@@ -24,6 +24,28 @@
 //     }, smart.on_done);
 //   }
 // }
+const ignoreMaps = [
+  "abtesting",
+  "bank_b", // NOTE: Don't ignore if you have access
+  "bank_u", // NOTE: Don't ignore if you have access
+  "cgallery",
+  "d2",
+  "d_e",
+  "duelland",
+  "shellsisland",
+  "ship0",
+  "test",
+  "old_bank",
+  "old_main",
+  "original_main",
+  "resort",
+  "resort_e",
+];
+let alpathfinder = await import("alpathfinder");
+let fs = await import("fs");
+let code = await fs.promises.readFile('data.raw.js', 'utf8');
+alpathfinder.prepare(JSON.parse(code));
+console.log(alpathfinder.getPath("main", 0, 0, "spookytown", 0, 0, 10))
 let CACHE = new Map();
 // A very helpful function to turn a Mover path into a smart_move plot
 function convert(path, starting_map) {
@@ -41,6 +63,28 @@ function convert(path, starting_map) {
         current_map = node.action_target;
         break;
       case "Move":
+        plot.push({ x: node.x, y: node.y, map: current_map });
+        break;
+    }
+  }
+  return plot;
+}
+
+function convert2(path, starting_map) {
+  let plot = [];
+  let current_map = starting_map;
+  for(let i = 0; i < path.length; i++) {
+    let node = path[i];
+    switch(node.method) {
+      case "town":
+        plot.push({ town: true, map: current_map, x: node.x, y: node.y });
+        i++;
+        break;
+      case "door":
+        plot.push({ transport: true, map: node.map, s: node.spawn,x : node.x, y: node.y });
+        current_map = node.action_target;
+        break;
+      case "move":
         plot.push({ x: node.x, y: node.y, map: current_map });
         break;
     }
@@ -190,7 +234,7 @@ class Mover {
 
     // Mover.#log(`Path calculation took ${data.time}ms`);
 
-    this.smart.plot = convert(data.path, character.map);
+    this.smart.plot = convert2(data.path, character.map);
     this.smart.start_x = character.real_x;
     this.smart.start_y = character.real_y;  
     this.smart.map = destination.map;
@@ -300,7 +344,17 @@ class Mover {
 
     if (!endPos) return { error: "Unrecognized location" };
     
-    return null;
+    return {
+        path: alpathfinder.getPath(
+        startPos.map,
+        startPos.x,
+        startPos.y,
+        endPos.map,
+        endPos.x,
+        endPos.y,
+        character.speed
+      )
+    };
     
     let res = await fetch("https://almapper.zinals.dev/FindPath/", {
             method: "POST",

@@ -73,6 +73,9 @@ class Executor {
       try {
         source_module = new vm.Script(final_code, {
           filename: this.glob.name + ":Combined.js",
+          async importModuleDynamically(specifier, referrer, importAttributes) {
+            return await import(specifier);
+          }
         });
       } catch (err) {
         console.log(this.glob.name);
