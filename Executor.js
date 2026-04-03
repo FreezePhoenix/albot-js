@@ -6,7 +6,6 @@ const vm = require("vm");
 
 const fetch = (...args) => import("node-fetch").then(({default: fetch}) => fetch(...args));
 
-
 class Executor {
   constructor(glob, file) {
     this.file = file;

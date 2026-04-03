@@ -24,30 +24,8 @@
 //     }, smart.on_done);
 //   }
 // }
-const ignoreMaps = [
-  "abtesting",
-  "bank_b", // NOTE: Don't ignore if you have access
-  "bank_u", // NOTE: Don't ignore if you have access
-  "cgallery",
-  "d2",
-  "d_e",
-  "duelland",
-  "shellsisland",
-  "ship0",
-  "test",
-  "old_bank",
-  "old_main",
-  "original_main",
-  "resort",
-  "resort_e",
-];
-let alpathfinder = import("alpathfinder");
-let fs = import("fs");
-let code = fs.then(fs => fs.promises.readFile('data.raw.js', 'utf8'));
-alpathfinder = alpathfinder.then(alpathfinder => code.then(code => {
-  alpathfinder.prepare(JSON.parse(code), ignoreMaps); return alpathfinder;
-}));
-alpathfinder.then(alpathfinder => console.log(alpathfinder.getPath("main", 0, 0, "spookytown", 0, 0, 10)));
+
+  console.log(await parent.alpathfinder)
 let CACHE = new Map();
 // A very helpful function to turn a Mover path into a smart_move plot
 function convert(path, starting_map) {
@@ -180,7 +158,7 @@ class Mover {
    * @static
    * @param {{x: number, y: number, map: string}|string} destination
    * @returns {Promise<void>}
-   */
+   */;
   static async move_by_path(destination, callback, tries = 0) {
     let data = null;
     try {
@@ -347,7 +325,7 @@ class Mover {
     if (!endPos) return { error: "Unrecognized location" };
     
     return {
-        path: alpathfinder.getPath(
+        path: (await parent.alpathfinder).getPath(
         startPos.map,
         startPos.x,
         startPos.y,

@@ -36,6 +36,31 @@ var Game = function (
 	this.pathfinding = null;
 };
 
+const ignoreMaps = [
+  "abtesting",
+  "bank_b", // NOTE: Don't ignore if you have access
+  "bank_u", // NOTE: Don't ignore if you have access
+  "cgallery",
+  "d2",
+  "d_e",
+  "duelland",
+  "shellsisland",
+  "ship0",
+  "test",
+  "old_bank",
+  "old_main",
+  "original_main",
+  "resort",
+  "resort_e",
+];
+
+let alpathfinder = import("alpathfinder");
+let fs = import("fs");
+let code = fs.then(fs => fs.promises.readFile('data.raw.js', 'utf8'));
+alpathfinder = alpathfinder.then(alpathfinder => code.then(code => {
+  alpathfinder.prepare(JSON.parse(code), ignoreMaps); return alpathfinder;
+}));
+
 Game.prototype.init = async function () {
     var parent = {};
 	let self = this;
@@ -116,6 +141,7 @@ Game.prototype.init = async function () {
 	var onLoad = function () {
 		log_in(user_id, character_to_load, user_auth);
 	};
+	await alpathfinder;
     eval(await fs.readFile('modedGameFiles/common_functions.js', 'utf8'));
     eval(await fs.readFile('modedGameFiles/functions.js', 'utf8'));
 	eval(await fs.readFile('modedGameFiles/game.js', 'utf8'));
@@ -130,6 +156,7 @@ Game.prototype.init = async function () {
 	var glob = Object.create(
 		global,
 		Object.getOwnPropertyDescriptors({
+			alpathfinder,
 			push_deferred: push_deferred,
 			resolve_deferred: resolve_deferred,
 			resolve_deferreds: resolve_deferreds,
