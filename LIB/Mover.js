@@ -61,8 +61,9 @@ function convert2(path, starting_map) {
         i++;
         break;
       case "door":
+      case "transport":
         plot.push({ transport: true, map: node.map, s: node.spawn,x : node.x, y: node.y });
-        current_map = node.action_target;
+        current_map = node.map;
         break;
       case "move":
         plot.push({ x: node.x, y: node.y, map: current_map });
@@ -213,7 +214,7 @@ class Mover {
     }
 
     // Mover.#log(`Path calculation took ${data.time}ms`);
-
+console.log(data.path);
     this.smart.plot = convert2(data.path, character.map);
     this.smart.start_x = character.real_x;
     this.smart.start_y = character.real_y;  
