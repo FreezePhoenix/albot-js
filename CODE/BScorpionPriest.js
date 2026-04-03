@@ -30,7 +30,7 @@ const {
 );
 
 let IS_TURN_TO_SURGE = character.name == "Rael";
-const DISABLE_EVENTS = true;
+const DISABLE_EVENTS = false;
 const sleep = (ms, value) => new Promise((r) => setTimeout(r, ms, value));
 
 const timeout = async (promise, timeout) => {
