@@ -300,7 +300,7 @@ class Mover {
 
     if (!endPos) return { error: "Unrecognized location" };
     
-    // return null;
+    return null;
     
     let res = await fetch("https://almapper.zinals.dev/FindPath/", {
             method: "POST",
