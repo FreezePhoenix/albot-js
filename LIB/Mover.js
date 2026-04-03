@@ -41,11 +41,13 @@ const ignoreMaps = [
   "resort",
   "resort_e",
 ];
-let alpathfinder = await import("alpathfinder");
-let fs = await import("fs");
-let code = await fs.promises.readFile('data.raw.js', 'utf8');
-alpathfinder.prepare(JSON.parse(code));
-console.log(alpathfinder.getPath("main", 0, 0, "spookytown", 0, 0, 10))
+let alpathfinder = import("alpathfinder");
+let fs = import("fs");
+let code = fs.then(fs => fs.promises.readFile('data.raw.js', 'utf8'));
+alpathfinder = alpathfinder.then(alpathfinder => code.then(code => {
+  alpathfinder.prepare(JSON.parse(code), ignoreMaps); return alpathfinder;
+}));
+alpathfinder.then(alpathfinder => console.log(alpathfinder.getPath("main", 0, 0, "spookytown", 0, 0, 10)));
 let CACHE = new Map();
 // A very helpful function to turn a Mover path into a smart_move plot
 function convert(path, starting_map) {
