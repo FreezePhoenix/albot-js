@@ -771,7 +771,6 @@ function bfs()
 
 		if(smart.use_town) qpush({map:current.map,x:map.spawns[0][0],y:map.spawns[0][1],town:true}); // "town"
 
-		shuffle(c_moves);
 		c_moves.forEach(function(m){
 			var new_x=current.x+m[0],new_y=current.y+m[1];
 			// game_log(new_x+" "+new_y);
