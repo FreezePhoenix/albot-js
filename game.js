@@ -54,12 +54,11 @@ const ignoreMaps = [
   "resort_e",
 ];
 
-let alpathfinder = import("alpathfinder");
-let fs = import("fs");
-let code = fs.then(fs => fs.promises.readFile('data.raw.js', 'utf8'));
-alpathfinder = alpathfinder.then(alpathfinder => code.then(code => {
-  alpathfinder.prepare(JSON.parse(code), ignoreMaps); return alpathfinder;
-}));
+let alpathfinder = import("./alpathfinder/alpathfinder.mjs");
+console.log(alpathfinder);
+alpathfinder = alpathfinder.then(alpathfinder => {
+  alpathfinder.prepare(workerData.data, ignoreMaps); return alpathfinder;
+});
 
 Game.prototype.init = async function () {
     var parent = {};
