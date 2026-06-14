@@ -1254,8 +1254,7 @@ async function farm(location) {
 	} else {
 		let priest_nearby = get_player(priest);
 		if (
-			(priest_nearby == null || priest_nearby.rip) &&
-			!(character.name == 'Raelina' && get_player('AriaHarper'))
+			(priest_nearby == null || priest_nearby.rip)
 		) {
 			// Move outside the spawn, so we don't die to a random scorpion...
 			// TODO: Every 10ms, we create a new object. How do you feel about this?
