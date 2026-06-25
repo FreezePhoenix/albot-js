@@ -233,7 +233,6 @@ Game.prototype.init = async function () {
 				if (!is_array(a)) {
 					a = [a];
 				}
-				console.log(a, b);
 				parentPort.postMessage({
 					event: 'cm',
 					names: a,
