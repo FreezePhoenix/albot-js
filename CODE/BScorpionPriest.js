@@ -1216,7 +1216,6 @@ async function farm(location) {
 								ensure_equipped_batch(DPS_SET);
 								break;
 							case 'cooldown':
-								console.log(character.name, e);
 								await sleep(e.ms);
 								ensure_equipped_batch(DPS_SET);
 								return;
