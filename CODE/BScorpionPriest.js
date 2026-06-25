@@ -678,7 +678,7 @@ if (character.ctype == 'warrior') {
 				parent.socket.emit("skill", { name: 'temporalsurge' });
 				ensure_equipped(DPS_ORB_FILTER, 'orb');
 			} else {
-				console.log(character.name, "Missed surge");
+				// console.log(character.name, "Missed surge");
 			}
 		}
 	});
