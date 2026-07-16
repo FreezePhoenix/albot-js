@@ -1252,6 +1252,9 @@ async function farm(location) {
 		move_to(location ?? BELOW_BSCORP_SPAWN);
 	} else {
 		let priest_nearby = get_player(priest);
+		if(character.name == "Raelina") {
+			priest_nearby = get_player("AriaHarper");
+		}
 		if (
 			(priest_nearby == null || priest_nearby.rip)
 		) {
