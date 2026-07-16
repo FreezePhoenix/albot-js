@@ -143,7 +143,6 @@ restock({
 			t2quiver: [30000000, 1, 0],
 	},
 	buy: {
-    essenceoffire: [ 115000, 9999, -1 ]
   },
 });
 
