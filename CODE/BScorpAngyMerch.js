@@ -142,7 +142,7 @@ function increment_destroyed() {
 
 restock({
 	sell: {
-			offeringp: [2000000, 100, -1],
+			offeringp: [2500000, 500, -1],
 			t2quiver: [30000000, 1, 0],
 	},
 	buy: {
@@ -565,14 +565,13 @@ if (character.name == 'AriaHarper') {
 		}
 	}, 250);
 	// DPS filters
-	const D_CHEST_FILTER = ItemFilter.ofName('vattire')
+	const D_CHEST_FILTER = ItemFilter.ofName('xarmor')
 		.level('9', '==')
 		.build();
 	const D_OFFHAND_FILTER = ItemFilter.ofName('shield')
 		.level('9', '==')
 		.build();
-	const D_RING1_FILTER = ItemFilter.ofName('armorring').level('1', '==').build();
-	const D_RING2_FILTER = ItemFilter.ofName('armorring').level('2', '==').build();
+	const D_RING_FILTER = ItemFilter.ofName('armorring').level('2', '==').build();
 	const D_ORB_FILTER = ItemFilter.ofName('ftrinket')
 		.level('3', '==')
 		.build();
@@ -584,8 +583,8 @@ if (character.name == 'AriaHarper') {
 
 	let PDPS_SET = [
 		[D_ORB_FILTER, 'orb'],
-		[D_RING1_FILTER, 'ring1'],
-		[D_RING2_FILTER, 'ring2'],
+		[D_RING_FILTER, 'ring1'],
+		[D_RING_FILTER, 'ring2'],
 		[D_OFFHAND_FILTER, 'offhand'],
 		[D_CHEST_FILTER, 'chest'],
 	];
