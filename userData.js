@@ -31,8 +31,8 @@ module.exports = {
           {
               "characterName": "AriaHarper",
               "characterId": "5513766260178944",
-              "runScript": "BScorpAngyMerch.js",
-              "server": "US I"
+              "runScript": "BScorpionMerchant.js",
+              "server": SERVER
           }, // */
           {
               "characterName": "Rael",
@@ -50,7 +50,7 @@ module.exports = {
               "characterName": "Raelina",
               "characterId": "5931316711784448",
               "runScript": SCRIPT,
-              "server": "US I"
+              "server": SERVER
           }, // */
           /* {
               "characterName": "Anony",
