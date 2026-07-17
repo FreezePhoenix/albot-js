@@ -1098,7 +1098,8 @@ if (character.name == 'Rael' || character.name == 'Raelina') {
 }
 let LOGGED = 0;
 let UNEQUIP_OFFHAND = {	slot: 'offhand' };
-
+let USE_CLEAVE = false;
+let USE_SUGAR = false;
 async function farm(location) {
 	switch (character.ctype) {
 		case 'priest':
@@ -1182,7 +1183,7 @@ async function farm(location) {
 							]);
 							if (character.s.sugarrush == null) {
 								if (
-									can_use('cleave', NOW) &&
+									USE_CLEAVE && can_use('cleave', NOW) &&
 									character.mp > 1900 &&
 									attack_target.mtype == 'bscorpion'
 								) {
@@ -1190,10 +1191,10 @@ async function farm(location) {
 									ensure_equipped_batch(AXE_SET);
 									use_skill('cleave');
 								}
-								if (distance_from_target > 0) {
+								if (distance_from_target > 0 && USE_SUGAR) {
 									ensure_equipped_batch(SUGAR_SET);
 								}
-							} else {
+							} else if(USE_SUGAR) {
 								ensure_equipped_batch(SUGAR_LESSER_SET);
 							}
 
