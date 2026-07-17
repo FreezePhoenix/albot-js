@@ -971,7 +971,7 @@ if (character.name == 'Geoffriel') {
 					ensure_equipped(TEMPORAL_ORB, 'orb');
 					parent.socket.emit("skill", { name: 'temporalsurge' });
 				} else {
-					console.log(character.name, "Missed surge");
+					// console.log(character.name, "Missed surge");
 				}
 			}
 			let index_of_booster = character.items.findIndex(BOOSTER_FILTER);
