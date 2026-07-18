@@ -358,9 +358,6 @@ function follow_entity(entity, distance) {
 		x: entity.real_x,
 		y: center_y
 	};
-	if(distance(character, entity) < character.range * 0.8) {
-		return;
-	}
 	let point = angleToPoint(entity.real_x, center_y);
 	var position = pointOnAngle(entity, center, point, distance);
 	position.map = character.map;
@@ -1069,7 +1066,9 @@ if (character.name == 'Rael' || character.name == 'Raelina') {
 	setInterval(() => {
 		let attack_target = find_viable_target();
 		if (attack_target != null) {
-			follow_entity(attack_target, 20);
+			if(distance(character, attack_target) > character.range * 0.8) {
+				move_to(attack_target);
+			}
 		} else {
 			ensure_equipped_batch(DPS_SET);
 		}
