@@ -561,7 +561,14 @@ Game.prototype.init = async function () {
                 'server',
                 glob.server_region + ' ' + glob.server_identifier
             );
-            
+			socket.onAny((...args) => {
+				entBaseDamage += JSON.stringify(args).length;
+			});
+			let initialemit = socket.emit;
+			socket.emit = functoin(...args) {
+				entBlastDamage += JSON.stringify(args).length;
+				initialemit.call(socket, ...args);
+			}
 			var cpu_last_check = performance.eventLoopUtilization();
 			setInterval(() => {
 				let ELAPSED = performance.now() - METER_START;
