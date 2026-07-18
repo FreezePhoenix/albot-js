@@ -646,7 +646,7 @@ setTimeout(async () => {
 		}
 	}
 }, 100);
-
+const USE_TEMPORAL = false;
 const TEMPORAL_ORB = ItemFilter.ofName("orboftemporal").build();
 
 if (character.ctype == 'warrior') {
@@ -666,7 +666,7 @@ if (character.ctype == 'warrior') {
 	}
 	
 	parent.socket.on('drop', (data) => {
-		if(IS_TURN_TO_SURGE) {
+		if(IS_TURN_TO_SURGE && USE_TEMPORAL) {
 			if(can_use("temporalsurge", NOW)) {
 				if(character.name == "Rael") {
 					send_cm("Raelina", 'surged');
@@ -964,7 +964,7 @@ if (character.name == 'Geoffriel') {
 			return;
 		}
 		if (distance_to_point(x, y) < 200) {
-			if(IS_TURN_TO_SURGE) {
+			if(IS_TURN_TO_SURGE && USE_TEMPORAL) {
 				if(can_use("temporalsurge", NOW)) {
 					send_cm("Rael", 'surged');
 					IS_TURN_TO_SURGE = false;
