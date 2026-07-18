@@ -561,9 +561,6 @@ Game.prototype.init = async function () {
                 'server',
                 glob.server_region + ' ' + glob.server_identifier
             );
-			socket.onAny((...args) => {
-				entBaseDamage += JSON.stringify(args).length;
-			});
 			let initialemit = socket.emit;
 			socket.emit = (...args) => {
 				entBlastDamage += JSON.stringify(args).length;
