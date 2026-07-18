@@ -358,6 +358,9 @@ function follow_entity(entity, distance) {
 		x: entity.real_x,
 		y: center_y
 	};
+	if(distance(character, entity) < character.range * 0.8) {
+		return;
+	}
 	let point = angleToPoint(entity.real_x, center_y);
 	var position = pointOnAngle(entity, center, point, distance);
 	position.map = character.map;
@@ -379,8 +382,8 @@ function pointOnAngle(entity, center, angle, tdistance) {
 	let cur_linear_distance = distance_to_point(center.x, center.y);
 	tdistance = tdistance + cur_linear_distance - cur_distance;
 	return {
-		x: center.x + tdistance * Math.cos(angle),
-		y: center.y + tdistance * Math.sin(angle),
+		x: Math.round(center.x + tdistance * Math.cos(angle)),
+		y: Math.round(center.y + tdistance * Math.sin(angle)),
 	};
 }
 
