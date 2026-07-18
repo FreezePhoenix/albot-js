@@ -50,7 +50,7 @@ function increment_destroyed() {
 
 restock({
 	sell: {
-		offeringp: [2000000, 100, -1],
+		offeringp: [2500000, 500, -1],
 	},
 	buy: {},
 });
