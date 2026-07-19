@@ -561,11 +561,14 @@ Game.prototype.init = async function () {
                 'server',
                 glob.server_region + ' ' + glob.server_identifier
             );
-			let initialemit = socket.emit;
-			socket.emit = (...args) => {
-				entBlastDamage += JSON.stringify(args).length;
-				initialemit.call(socket, ...args);
-			}
+
+			socket.onAny((...args) => {
+				entBlastDamage += JSON.stringify(args).length + 2;
+			});
+			// socket.emit = (...args) => {
+			// 	entBlastDamage += JSON.stringify(args).length;
+			// 	initialemit.call(socket, ...args);
+			// }
 			var cpu_last_check = performance.eventLoopUtilization();
 			setInterval(() => {
 				let ELAPSED = performance.now() - METER_START;
