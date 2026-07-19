@@ -1096,7 +1096,7 @@ if (character.name == 'Rael' || character.name == 'Raelina') {
 				move(movePoint.x, movePoint.y);
 			}
 		}
-	}, 500);
+	}, 1000);
 }
 let LOGGED = 0;
 let UNEQUIP_OFFHAND = {	slot: 'offhand' };
