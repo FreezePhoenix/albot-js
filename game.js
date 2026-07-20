@@ -8,6 +8,7 @@ var zlib = require('node:zlib');
 var LocalStorage = require('node-localstorage').LocalStorage;
 var DataWrapper = require('./DataWrapper');
 var msgpack = require("./bot-web-interface/webServer/public/parser/msgpack.js");
+let DICT_BUFFER = Buffer.from(`","level":{"name":"`);
 localStorage = new LocalStorage('./localStorage');
 var Game = function (
 	address,
@@ -566,11 +567,14 @@ Game.prototype.init = async function () {
 
 			socket.onAny((...args) => {
 				if(args[0] == "player") {
-					entBaseDamage += (msgpack.encode(args)).length + 2;
+					entBaseDamage += (zlib.deflateSync(JSON.stringify(args), {
+						dictionary: DICT_BUFFER })).length + 2;
 				} else if(args[0] == "entities") {
-					entBlastDamage += (msgpack.encode(args)).length + 2;
+					entBlastDamage += (zlib.deflateSync(JSON.stringify(args), {
+						dictionary: DICT_BUFFER })).length + 2;
 				} else {
-					entBurnDamage += (msgpack.encode(args)).length + 2;
+					entBurnDamage += (zlib.deflateSync(JSON.stringify(args), {
+						dictionary: DICT_BUFFER })).length + 2;
 				}
 			});
 			// socket.emit = (...args) => {
