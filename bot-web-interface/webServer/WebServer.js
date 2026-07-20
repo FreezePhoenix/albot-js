@@ -75,7 +75,8 @@ class SocketServer {
     }
     openSocket() {
         this.io = Server(server, {
-            parser
+            parser,
+            perMessageDeflate: true
         });
         this.io.sockets.on('connection', (socket) => {
             socket.emit("setup", {
