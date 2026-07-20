@@ -545,7 +545,7 @@
         throw new Error("Unknown type " + type);
     }
 
-    function encodedSize(value) {
+    exports.encodedSize = function encodedSize(value) {
         var type = typeof value;
 
         // Raw Bytes
