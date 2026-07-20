@@ -4,6 +4,7 @@
 const {
 	Worker, isMainThread, parentPort, workerData
 } = require('worker_threads');
+var zlib = require('node:zlib');
 var LocalStorage = require('node-localstorage').LocalStorage;
 var DataWrapper = require('./DataWrapper');
 var msgpack = require("./bot-web-interface/webServer/public/parser/msgpack.js");
@@ -565,11 +566,11 @@ Game.prototype.init = async function () {
 
 			socket.onAny((...args) => {
 				if(args[0] == "player") {
-					entBaseDamage += msgpack.encodedSize(args) + 2;
+					entBaseDamage += zlib.deflateSync(msgpack.encode(args)).length + 2;
 				} else if(args[0] == "entities") {
-					entBlastDamage += msgpack.encodedSize(args) + 2;
+					entBlastDamage += zlib.deflateSync(msgpack.encode(args)).length + 2;
 				} else {
-					entBurnDamage += msgpack.encodedSize(args) + 2;
+					entBurnDamage += zlib.deflateSync(msgpack.encode(args)).length + 2;
 				}
 			});
 			// socket.emit = (...args) => {
