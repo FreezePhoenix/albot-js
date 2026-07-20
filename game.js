@@ -563,7 +563,13 @@ Game.prototype.init = async function () {
             );
 
 			socket.onAny((...args) => {
-				entBlastDamage += JSON.stringify(args).length + 2;
+				if(args[0] == "player") {
+					entBaseDamage += JSON.stringify(args).length + 2;
+				} else if(args[0] == "entities") {
+					entBlastDamage += JSON.stringify(args).length + 2;
+				} else {
+					entBurnDamage += JSON.stringify(args).length + 2;
+				}
 			});
 			// socket.emit = (...args) => {
 			// 	entBlastDamage += JSON.stringify(args).length;
