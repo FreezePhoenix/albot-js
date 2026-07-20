@@ -1063,6 +1063,16 @@ if (character.name == 'Rael') {
 }
 // */
 if (character.name == 'Rael' || character.name == 'Raelina') {
+	setInterval(() => {
+		let attack_target = find_viable_target();
+		if (attack_target != null) {
+			if(distance(character, attack_target) > character.range * 0.8) {
+				move_to(attack_target);
+			}
+		} else {
+			ensure_equipped_batch(DPS_SET);
+		}
+	}, 400);
 	parent.socket.on('hit', (data) => {
 		if (data.hid == character.name && data.source == 'attack') {
 			ensure_equipped_batch(DPS_SET);
@@ -1118,23 +1128,11 @@ async function farm(location) {
 		}
 		
 		let distance_from_target = distance(attack_target, character);
-		if(character.ctype == "warrior") {
-			if(distance_from_target > character.range * 0.8) {
-				move_to(attack_target);
-			}
-		}
 		if (distance_from_target < character.range) {
 			switch (character.ctype) {
 				case 'priest':
 					if (can_use('curse', NOW)) {
-						try {
-							curse(attack_target.id);
-							await parent.push_deferred('curse');	
-							reduce_cooldown("curse", (character.ping ?? 0) * 0.95);
-						} catch (e) {
-							console.log(character.name, e);
-							await sleep(100);
-						}
+						curse(attack_target.id);
 					}
 					if (
 						can_use('darkblessing', NOW) &&
