@@ -1063,16 +1063,6 @@ if (character.name == 'Rael') {
 }
 // */
 if (character.name == 'Rael' || character.name == 'Raelina') {
-	setInterval(() => {
-		let attack_target = find_viable_target();
-		if (attack_target != null) {
-			if(distance(character, attack_target) > character.range * 0.8) {
-				move_to(attack_target);
-			}
-		} else {
-			ensure_equipped_batch(DPS_SET);
-		}
-	}, 400);
 	parent.socket.on('hit', (data) => {
 		if (data.hid == character.name && data.source == 'attack') {
 			ensure_equipped_batch(DPS_SET);
@@ -1126,7 +1116,13 @@ async function farm(location) {
 		) {
 			zap(attack_target.id);
 		}
+		
 		let distance_from_target = distance(attack_target, character);
+		if(character.ctype == "warrior") {
+			if(distance_from_target > character.range * 0.8) {
+				move_to(attack_target);
+			}
+		}
 		if (distance_from_target < character.range) {
 			switch (character.ctype) {
 				case 'priest':
