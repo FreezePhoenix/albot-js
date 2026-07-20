@@ -6,6 +6,7 @@ const {
 } = require('worker_threads');
 var LocalStorage = require('node-localstorage').LocalStorage;
 var DataWrapper = require('./DataWrapper');
+var msgpack = require("./bot-web-interface/webServer/public/parser/msgpack.js");
 localStorage = new LocalStorage('./localStorage');
 var Game = function (
 	address,
@@ -564,11 +565,11 @@ Game.prototype.init = async function () {
 
 			socket.onAny((...args) => {
 				if(args[0] == "player") {
-					entBaseDamage += JSON.stringify(args).length + 2;
+					entBaseDamage += msgpack.encodedSize(args) + 2;
 				} else if(args[0] == "entities") {
-					entBlastDamage += JSON.stringify(args).length + 2;
+					entBlastDamage += msgpack.encodedSize(args) + 2;
 				} else {
-					entBurnDamage += JSON.stringify(args).length + 2;
+					entBurnDamage += msgpack.encodedSize(args) + 2;
 				}
 			});
 			// socket.emit = (...args) => {
