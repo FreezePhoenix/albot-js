@@ -566,11 +566,11 @@ Game.prototype.init = async function () {
 
 			socket.onAny((...args) => {
 				if(args[0] == "player") {
-					entBaseDamage += zlib.deflateSync(msgpack.encode(args)).length + 2;
+					entBaseDamage += zlib.deflateSync(JSON.stringify(args)).length + 2;
 				} else if(args[0] == "entities") {
-					entBlastDamage += zlib.deflateSync(msgpack.encode(args)).length + 2;
+					entBlastDamage += zlib.deflateSync(JSON.stringify(args)).length + 2;
 				} else {
-					entBurnDamage += zlib.deflateSync(msgpack.encode(args)).length + 2;
+					entBurnDamage += zlib.deflateSync(JSON.stringify(args)).length + 2;
 				}
 			});
 			// socket.emit = (...args) => {
