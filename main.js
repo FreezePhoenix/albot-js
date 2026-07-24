@@ -106,8 +106,7 @@ async function main() {
 			}
 		}
 	}
-
-	let serverList = await httpWrapper.getServerList();
+	
 	if (userData.config.botWebInterface.start) {
 		BotWebInterface.SocketServer.getPublisher().setStructure([
 			{ name: 'name', type: 'text', label: 'name' },
@@ -210,12 +209,10 @@ async function main() {
 		console.log('No update detected. Using old data.js');
 	}
 	//Checks are done, starting bots.
-	// console.log(httpWrapper.serverList);
 	let index = 0;
 	gameData = await httpWrapper.getGameData();
 	for (let bot of true_bots) {
 		let serverInfo = await httpWrapper.getServerInfo(bot.server);
-		console.log(serverInfo)
 		if (serverInfo == null) {
 			console.log(`Server not found: ${bot.server}`);
 			process.exit();
@@ -234,7 +231,7 @@ async function main() {
 			index++,
 			bot.characterName,
 		];
-		await startGame(args, bot.characterName, httpWrapper.serverList);
+		await startGame(args, bot.characterName);
 	}
 }
 
@@ -250,17 +247,13 @@ function shutdown_all(exit_self = true) {
   }
 }
 
-exec("git remote add origin https://github.com/FreezePhoenix/albot-js.git").then(data => {
-	console.log(JSON.stringify(data));
-});
+exec("git remote add origin https://github.com/FreezePhoenix/albot-js.git")
 
 async function PULL() {
 	shutdown_all(false);
 	BotWebInterface.SocketServer.getPublisher().removeInterfaces();
 	let result = await exec("git checkout main");
-	console.log(JSON.stringify(result));
 	let result2 = await exec("git pull origin main");
-	console.log(JSON.stringify(result2));
 	main();
 }
 
@@ -287,7 +280,7 @@ process.on('SIGTERM', function () {
 	shutdown_all();
 });
 
-async function startGame(args, characterName, serverList, botinterface) {
+async function startGame(args, characterName, botinterface) {
 	if (botinterface == undefined) {
 		botinterface =
 			BotWebInterface.SocketServer.getPublisher().createInterface();
@@ -310,7 +303,7 @@ async function startGame(args, characterName, serverList, botinterface) {
 	worker.on('message', async (m) => {
 		if (m.type === 'status' && m.status === 'disconnected' && !closed) {
 			worker.terminate();
-			startGame(args, characterName, serverList, botinterface);
+			startGame(args, characterName, botinterface);
 			closed = true;
 		} else if (m.type === 'shutdown') {
 			shutdown_all(false);
@@ -331,7 +324,7 @@ async function startGame(args, characterName, serverList, botinterface) {
 
 			args[3] = ip;
 			args[4] = port;
-			startGame(args, characterName, serverList, botinterface);
+			startGame(args, characterName, botinterface);
 		} else if (m.event == 'cm') {
 			m.names.forEach((name) => {
 				if (processes.has(name)) {
