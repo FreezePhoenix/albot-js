@@ -2,6 +2,7 @@ const SCRIPT = "BScorpionPriest.js"
 const SERVER = "US II";
 let RUN_ALL = true;
 let RUN_MERCH = true;
+let RUN_FARMERS = true;
 
 module.exports = {
     "config": {
@@ -18,6 +19,9 @@ module.exports = {
     },
     "toggleMerch": function() {
       RUN_MERCH = !RUN_MERCH;
+    },
+    "toggleFarmers": function() {
+      RUN_FARMERS = !RUN_FARMERS;
     },
     
     "toggleAll": function() {
@@ -95,6 +99,9 @@ module.exports = {
               "server": "EU I"
           } // */
       ]
+      if(!RUN_FARMERS) {
+       BOTS = [BOTS[0]];
+      }
       
       if(!RUN_MERCH) {
         BOTS.shift();
