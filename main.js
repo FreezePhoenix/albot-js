@@ -269,6 +269,11 @@ BotWebInterface.SocketServer.on("command", async (data) => {
 			BotWebInterface.SocketServer.getPublisher().removeInterfaces();
 			userData.toggleAll();
 			main();
+		} else if(data.command == "toggle_farmers") {
+			shutdown_all(false);
+			BotWebInterface.SocketServer.getPublisher().removeInterfaces();
+			userData.toggleFarmers();
+			main();
 		} else if(data.command == "pull") {
 			PULL()
 		}
