@@ -1,5 +1,5 @@
 const SCRIPT = "BScorpionPriest.js"
-const SERVER = "US II";
+const SERVER = "US III";
 let RUN_ALL = true;
 let RUN_MERCH = true;
 let RUN_FARMERS = true;
