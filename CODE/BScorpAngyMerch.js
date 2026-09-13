@@ -149,7 +149,7 @@ Exchange.toggle = () => {
 	enabled = !enabled;
 };
 
-Exchange("anniversarygift", 1, 1);
+// Exchange("anniversarygift", 1, 1);
 
 let stand_analysis = {};
 const analyze = () => {
