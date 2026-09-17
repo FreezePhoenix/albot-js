@@ -4,6 +4,18 @@ function ms_until(skill_name, timestamp = new Date()) {
 	}
 	return -Infinity;
 };
+let luck_targets = ['Rael', 'AriaHarper'];
+setInterval(() => {
+	use_skill(
+		'mluck',
+		parent.entities[
+			luck_targets[
+				(luck_target = ++luck_target % luck_targets.length)
+			]
+		] ?? character
+	);
+}, 2100);
+
 let stand_analysis = {};
 const analyze = () => {
 	const buy = (stand_analysis.buy = {});
