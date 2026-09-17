@@ -1670,7 +1670,7 @@ restock({
 					case 'merchant':
 
 						try {
-							if (can_use('attack')) {
+							if (can_use('attack') && attack_target.target == null) {
 								await attack(attack_target);
 							}
 						} catch(e) {
