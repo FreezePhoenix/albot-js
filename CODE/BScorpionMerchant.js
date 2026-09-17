@@ -1,854 +1,1579 @@
-const {
-	restock,
-	Mover,
-	Exchange,
-	Dismantle,
-	ItemFilter,
-	Adapter,
-	EntityPresenceFilter,
-} = await proxied_require(
-	'Mover.js',
-	'Exchange.js',
-	'Dismantle.js',
-	'restock.js',
-	'ItemFilter.js',
-	'Adapter.js',
-	'EntityPresenceFilter.js'
-);
 
-function get(name) {
-	// persistent get function that works for serializable objects
-	try {
-		return JSON.parse(localStorage.getItem('cstore_' + name));
-	} catch (e) {
-		return null;
+function ms_until(skill_name, timestamp = new Date()) {
+	if (skill_name in parent.next_skill) {
+		return parent.next_skill[skill_name] - timestamp;
 	}
-}
-
-function set(name, value) {
-	// persistent set function that works for serializable objects
-	try {
-		localStorage.setItem('cstore_' + name, JSON.stringify(value));
-		return true;
-	} catch (e) {
-		game_log(
-			'set() call failed for: ' + name + ' reason: ' + e,
-			colors.code_error
-		);
-		return false;
+	return -Infinity;
+};
+(async () => {
+	function CompleteAdapter(...properties) {
+		return Function(
+			`const object = { ${properties
+			.map((initial) => `${initial}: null`)
+			.join(", ")} };\nreturn (${properties.join(",")}) => {\n${properties
+			.map((initial) => `\tobject.${initial} = ${initial};`)
+			.join("\n")}\n\treturn object;\n}`
+		)();
 	}
-}
-
-let destroyed = get('destroyed') ?? 0;
-set_message(`D: ${destroyed.toLocaleString()}`);
-
-function increment_destroyed() {
-	destroyed++;
-	// set_message(`D: ${destroyed.toLocaleString()}`);
-	set('destroyed', destroyed);
-}
-
-restock({
-	sell: {
-		offeringp: [5000000, 500, -1],
-	},
-	buy: {},
-});
-
-parent.socket.emit('respawn');
-
-const JACKO_FILTER = ItemFilter.ofName('jacko').build();
-const FTRINKET_FILTER = ItemFilter.ofName('ftrinket').build();
-const BROOM_FILTER = ItemFilter.ofName('broom').build();
-const ROD_FILTER = ItemFilter.ofName('rod').build();
-const LUCK_FILTER = ItemFilter.ofName('elixirluck').build();
-const PUMPKIN_FILTER = ItemFilter.ofName('pumpkinspice').build();
-const BUNNY_FILTER = ItemFilter.ofName('bunnyelixir').build();
-
-const group = ['Raelina', 'Rael', 'Geoffriel'];
-
-const tree_exists = G.maps.main.npcs.find(({ id }) => id == 'newyear_tree');
-
-Dismantle(
-	'bowofthedead',
-	'swordofthedead',
-	'staffofthedead',
-	'daggerofthedead',
-	'maceofthedead',
-	'spearofthedead'
-);
-
-setInterval(() => {
-	if (character.party != undefined && character.party != 'AriaHarper') {
-		parent.socket.emit('party', { event: 'leave' });
+	function Adapter(...properties) {
+		return Function("object", ...properties, properties.map((initial) => {
+			return "\tobject." + initial + " = " + initial + ";" 
+		}).join("\n") + "return object");
 	}
-	// if (character.party != 'AriaHarper') {
-	// 	parent.socket.emit('party', { event: 'invite', name: 'Geoffriel' });
-	// }
-}, 30000);
+	let CACHE = new Map();
 
-Exchange('candy1');
+	const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-Mover.init(smart, G, smart_move);
+	function is_string(obj)
+	{ try{
+		return Object.prototype.toString.call(obj) == '[object String]';
+	} catch(e){} return false; }
 
-let tree = false;
-let purchase_amount = 1000;
 
-function num_items(name) {
-	let item_count = 0;
-	if (typeof name == 'function') {
-		for (let i = 0; i < character.isize; i++) {
+	let FILTERS = [];
+
+	const EXCHANGE_ADAPTABLE = CompleteAdapter('item_num', 'q');
+
+	let min_mp = 300;
+
+	const DISMANTLE_ADAPTER = CompleteAdapter("num");
+	const dismantle_items = new Set();
+	setInterval(() => {
+		for(let i = 0; i < 42; i++) {
 			let item = character.items[i];
-			item_count += name(item) ? item.q ?? 1 : 0;
+			if(item != null && dismantle_items.has(item.name) && item.p == null && (item.level ?? 0) == 0) {
+				parent.socket.emit("dismantle", DISMANTLE_ADAPTER(i));
+				break;
+			}
 		}
-	} else {
-		for (let i = 0; i < character.isize; i++) {
-			let item = character.items[i];
-			item_count += item?.name === name ? item.q ?? 1 : 0;
+	}, 1000);
+	Dismantle = (item_name) => {
+		dismantle_items.add(item_name);
+	}
+
+	class ItemFilter {
+		#level = -1;
+		#levelMode = '==';
+		#names = [];
+		#property = true;
+		level(level, mode = '==') {
+			this.#level = level;
+			this.#levelMode = mode;
+			return this;
+		}
+		toString() {
+			let parts = [];
+			if (this.#names.length == 1) {
+				parts.push(`name='${this.#names[0]}'`);
+			} else if (this.#names.length > 1) {
+				parts.push(`name=['${this.#names.join("','")}']`);
+			}
+			if (this.#level != -1) {
+				parts.push(`level${this.#levelMode}${this.#level}`);
+			}
+			if (this.#property == false) {
+				parts.push('property=null');
+			} else if (this.#property != true) {
+				parts.push(`property='${this.#property}'`);
+			}
+			return `ItemFilter(${parts.join(',')})`;
+		}
+		property(name) {
+			this.#property = name;
+			return this;
+		}
+		name(name) {
+			if (!this.#names.includes(name) && typeof name == 'string') {
+				this.#names.push(name);
+			}
+			return this;
+		}
+		names(...names) {
+			for (let name of names) {
+				this.name(name);
+			}
+			return this;
+		}
+		#propertyFilter() {
+			if (this.#property === true) {
+				return 'true';
+			}
+			if (this.#property === false) {
+				return '(item?.p == null)';
+			}
+			return `(item?.p == "${this.#property}")`;
+		}
+		#levelFilter() {
+			if (this.#level == -1) {
+				return 'true';
+			}
+			return `(item?.level ${this.#levelMode} ${this.#level})`;
+		}
+		#nameFilter() {
+			if (this.#names.length == 0) {
+				throw new Error('ItemFilter.names must not be empty');
+			}
+			return `(${this.#names
+				.map((name) => `item?.name == "${name}"`)
+				.join(' || ')})`;
+		}
+		build() {
+			let parts = [
+				this.#levelFilter(),
+				this.#nameFilter(),
+				this.#propertyFilter(),
+			].filter((str) => str != 'true');
+			let result = Function(`return (item) => ${parts.join(' && ')};`)();
+			result.looking = this.#names;
+			return result;
+		}
+		static ofName(name) {
+			return new ItemFilter().name(name);
+		}
+		static toFilter(object) {
+			if (object instanceof Function) {
+				return object;
+			}
+			if (object instanceof String) {
+				return ofName(object).build();
+			}
+			return null;
 		}
 	}
 
-	return item_count;
-}
+	// for skills of form { name }
+	const NAME_ADAPTER = CompleteAdapter("name");
+	// for skills of form { name, id }
+	const NAME_ID_ADAPTER = CompleteAdapter("name", "id");
 
-function happy_holidays() {
-	tree = true;
-	let xmas_tree = G.maps.main.npcs.find(({ id }) => id === 'newyear_tree');
-	if (!moving) {
-		moving = true;
-		Mover.move_by_path({ x: 0, y: 0, map: 'main' }, () => {
-			tree = false;
-			parent.socket.emit('interaction', {
-				type: 'newyear_tree',
+	curse = (id) => parent.socket.emit("skill", NAME_ID_ADAPTER("curse", id));
+
+	zap = (id) => parent.socket.emit("skill", NAME_ID_ADAPTER("zapperzap", id));
+
+	taunt = (id) => parent.socket.emit("skill", NAME_ID_ADAPTER("taunt", id));
+
+	absorb = (id) => parent.socket.emit("skill", NAME_ID_ADAPTER("absorb", id));
+
+	warcry = () => parent.socket.emit("skill", NAME_ADAPTER("warcry"));
+
+	cleave = () => parent.socket.emit("skill", NAME_ADAPTER("cleave"));
+
+	hardshell = () => parent.socket.emit("skill", NAME_ADAPTER("hardshell"));
+
+	darkblessing = () => parent.socket.emit("skill", NAME_ADAPTER("darkblessing"));
+	class Lazy {
+		#iterable = null;
+		#functions = [];
+		#conditionals = [];
+		#takeCount = Infinity;
+		#triage = null;
+		constructor(iterable) {
+			this.#iterable = iterable;
+		}
+		take(quantity) {
+			this.#takeCount = quantity;
+			return this;
+		}
+		filter(predicate) {
+			this.#functions.push({
+				value: predicate,
+				type: "filter"
 			});
-			say('Happy Holidays!');
-			moving = false;
-		});
-	}
-}
-
-setInterval(() => {
-	if (character.moving && character.stand) {
-		parent.socket.emit('merchant', { close: 1 });
-	} else if (!character.moving && !character.stand) {
-		parent.socket.emit('merchant', { num: 41 });
-	}
-}, 250);
-
-const whitelist = [
-	// "spookyamulet",
-	'hpamulet',
-	'wbook0',
-	'hpbelt',
-	'gloves1',
-	'smoke',
-	'intring',
-	'dexring',
-	'strring',
-	'vitring',
-	'pants1',
-	'coat1',
-	'shoes1',
-	'helmet1',
-	'ringsj',
-	'wshield',
-	'cclaw',
-	'snowball',
-	'smoke',
-	'strbelt',
-  'intbelt',
-  'dexbelt',
-	'intamulet',
-	'stramulet',
-	'ecape',
-	'lantern',
-	'eslippers',
-	'epyjamas',
-	'eears',
-	'smoke',
-	'skullamulet',
-	// "pinkie",
-	'xmassweater',
-	'carrotsword',
-	'xmasshoes',
-	'mittens',
-	'merry',
-	'rednose',
-	'warmscarf',
-	'xmaspants',
-	'xmashat',
-	'ornamentstaff',
-	'candycanesword',
-];
-
-let destroy = [
-	'broom',
-	'wshoes',
-	'gphelmet',
-	'wattire',
-	'throwingstars',
-	'wcap',
-	'phelmet',
-	'wgloves',
-	'wbreeches',
-	'tshirt2',
-	'tshirt0',
-	'tshirt1',
-	// "tshirt3",
-	// "tshirt4"
-];
-
-setInterval(() => {
-	for (let i = 0, len = character.isize; i < len; i++) {
-		let item = character.items[i];
-		if (
-			destroy.includes(item?.name) &&
-			(item?.level ?? 0) < 1 &&
-			!item?.p
-		) {
-			parent.socket.emit('destroy', { num: i, q: 1, statue: true });
-			increment_destroyed();
-			continue;
+			return this;
 		}
-		if (
-			whitelist.includes(item?.name) &&
-			(item?.level ?? 0) < 1 &&
-			!item?.p
-		) {
-			sell(i);
+		map(consumer) {
+			this.#functions.push({
+				value: consumer,
+				type: "map"
+			});
+			return this;
 		}
-	}
-}, 5000);
-
-const USE_HP = { item: 'hp' };
-setInterval(() => {
-	if (character.hp < character.max_hp - 100 && can_use('use_hp')) {
-		parent.socket.emit('use', USE_HP);
-	}
-}, 100);
-
-const distance_to_point = (x, y) => {
-	return Math.sqrt(
-		Math.pow(character.real_x - x, 2) + Math.pow(character.real_y - y, 2)
-	);
-};
-
-let STATE = 'guard';
-
-function state_detector() {
-	if (tree_exists && !character.s.holidayspirit) {
-		STATE = 'tree';
-	} else if (can_use('fishing') && ensure_equipped(ROD_FILTER, 'mainhand')) {
-		STATE = 'fishing';
-	} else if (can_use('mining') && ensure_equipped('pickaxe', 'mainhand')) {
-		STATE = 'mining';
-	} else {
-		STATE = 'guard';
-	}
-}
-
-let moving = false;
-
-function move_to(location, callback) {
-	if (
-		can_move_to(location.x, location.y) &&
-		distance_to_point(location.x, location.y) > 1 &&
-		character.map == location.map
-	) {
-		move(location.x, location.y);
-	} else if (!moving && distance_to_point(location.x, location.y) > 2) {
-		moving = true;
-		Mover.move_by_path(location, () => {
-			moving = false;
-		});
-	}
-	if (
-		character.map == location.map &&
-		distance_to_point(location.x, location.y) < 1
-	) {
-		callback?.();
-	}
-}
-
-const ensure_equipped = (() => {
-	const EQUIP_ADAPTABLE = {
-		num: 0,
-		slot: '',
-	};
-	const EQUIP_ADAPTER = Adapter('num', 'slot');
-	return (item_filter, slot) => {
-		switch (typeof item_filter) {
-			case 'function':
-				if (!item_filter(character.slots[slot])) {
-					const index = get_index_of_item(item_filter);
-					if (index != -1) {
-						parent.socket.emit(
-							'equip',
-							EQUIP_ADAPTER(EQUIP_ADAPTABLE, index, slot)
-						);
-						return true;
+		while(conditional) {
+			this.#conditionals.push(conditional);
+			return this;
+		}
+		*[Symbol.iterator]() {
+			let iterator = this.#iterable[Symbol.iterator]();
+			let found = 0;
+			let current = iterator.next();
+			while (!current.done && found < this.#takeCount) {
+				let value = current.value;
+				for (let i = 0; i < this.#conditionals.length; i++) {
+					let condition = this.#conditionals[i];
+					if (!condition()) {
+						return null;
 					}
-					return false;
 				}
-				return true;
-			case 'string':
-				if (character.slots[slot]?.name != item_filter) {
-					const index = get_index_of_item(item_filter);
-					if (index != -1) {
-						parent.socket.emit(
-							'equip',
-							EQUIP_ADAPTER(EQUIP_ADAPTABLE, index, slot)
-						);
-						return true;
+				let filter_failed = false;
+				for (let i = 0, len = this.#functions.length; i < len; i++) {
+					let func = this.#functions[i];
+					if (func.type === "filter") {
+						if (func.value(value)) {
+							continue;
+						}
+						filter_failed = true;
+						break;
+					} else if (func.type === "map") {
+						value = func.value(value);
 					}
-					return false;
 				}
-				return true;
+				if (!filter_failed) {
+					found++;
+					yield value;
+				}
+				current = iterator.next();
+			}
+			return null;
 		}
+		forEach(consumer) {
+			let iter = this[Symbol.iterator](),
+				current = iter.next(),
+				cont = true;
+			while (!current.done && cont) {
+				cont = consumer(current.value);
+				current = iter.next();
+			}
+		}
+		/**
+   *
+   */
+		find(filter) {
+			let iterator = this.#iterable[Symbol.iterator]();
+			let found = 0;
+			let current = iterator.next();
+			while (!current.done && found < this.#takeCount) {
+				let value = current.value;
+				for (let i = 0; i < this.#conditionals.length; i++) {
+					let condition = this.#conditionals[i];
+					if (!condition()) {
+						return null;
+					}
+				}
+				let filter_failed = false;
+				for (let i = 0, len = this.#functions.length; i < len; i++) {
+					let func = this.#functions[i];
+					if (func.type === "filter") {
+						if (func.value(value)) {
+							continue;
+						}
+						filter_failed = true;
+						break;
+					} else if (func.type === "map") {
+						value = func.value(value);
+					}
+				}
+				if (!filter_failed && filter(value)) {
+					found++;
+					return value;
+				}
+				current = iterator.next();
+			}
+			return null;
+		}
+		/**
+   * For full functionality, it is recommended to use the iterator instead of ._value(). However, both exhibit Lazy behavior.
+   */
+		value() {
+			if (this.#takeCount < 1) {
+				return null;
+			} else if (this.#takeCount == 1) {
+				return this[Symbol.iterator]().next().value;
+			}
+			return [...this];
+		}
+		/**
+   *
+   */
+		first() {
+			return this[Symbol.iterator]().next().value;
+		}
+	}
+	const max = Math.max;
+	const min = Math.min;
+	if (parent.distance_sq == null) {
+		parent.distance_sq = function distance_sq(a, b) {
+			// https://discord.com/channels/238332476743745536/1025784763958693958
+			if (!a || !b) return 99999999;
+			if ("in" in a && "in" in b && a.in != b.in) return 99999999;
+			if ("map" in a && "map" in b && a.map != b.map) return 99999999;
+
+			const a_x = a.real_x ?? a.x;
+			const a_y = a.real_y ?? a.y;
+			const b_x = b.real_x ?? b.x;
+			const b_y = b.real_y ?? b.y;
+
+			const aHalfWidth = (a.width ?? 0) / 2;
+			const aHeight = (a.height ?? 0);
+			const bHalfWidth = (b.width ?? 0) / 2;
+			const bHeight = (b.height ?? 0);
+
+			// Compute bounds of each rectangle
+			const aLeft = a_x - aHalfWidth;
+			const aRight = a_x + aHalfWidth;
+			const aTop = a_y - aHeight;
+			const aBottom = a_y;
+
+			const bLeft = b_x - bHalfWidth;
+			const bRight = b_x + bHalfWidth;
+			const bTop = b_y - bHeight;
+			const bBottom = b_y;
+
+			const dx = Math.max(bLeft - aRight, aLeft - bRight, 0);
+			const dy = Math.max(bTop - aBottom, aTop - bBottom, 0);
+
+			return dx * dx + dy * dy;
+		}
+	}
+	function damage_multiplier(defense) {
+		// [10/12/17]
+		return min(
+			1.32,
+			max(
+				0.05,
+				1 -
+				(max(0, min(100, defense)) * 0.001 +
+				 max(0, min(100, defense - 100)) * 0.001 +
+				 max(0, min(100, defense - 200)) * 0.00095 +
+				 max(0, min(100, defense - 300)) * 0.0009 +
+				 max(0, min(100, defense - 400)) * 0.00082 +
+				 max(0, min(100, defense - 500)) * 0.0007 +
+				 max(0, min(100, defense - 600)) * 0.0006 +
+				 max(0, min(100, defense - 700)) * 0.0005 +
+				 max(0, defense - 800) * 0.0004) +
+				max(0, min(50, 0 - defense)) * 0.001 + // Negative's / Armor Piercing
+				max(0, min(50, -50 - defense)) * 0.00075 +
+				max(0, min(50, -100 - defense)) * 0.0005 +
+				max(0, -150 - defense) * 0.00025
+			)
+		);
+	}
+	const unpack = (elem, index, array) => {
+		array[index] = elem.entity;
 	};
-})();
-const go_fishing = () => {
-	if (!character.c.fishing) {
-		use_skill('fishing');
-	}
-};
-const go_mining = () => {
-	if (!character.c.mining) {
-		use_skill('mining');
-	}
-};
-setInterval(state_detector, 1000);
+	const sort = (a, b) => a.priority - b.priority || b.targeting - a.targeting || a.distance - b.distance;
+	const sort_id = (a, b) => a.priority - b.priority || b.entity.id - a.entity.id;
+	class Targeter {
+		#TargetingPriority = {
+			pinkgoo: 1,
+			snowman: 1,
+			mrpumpkin: 1,
+			mrgreen: 1,
+			rgoo: 0,
+			wabbit: 1,
+			bgoo: 1,
+		};
+		#Events = {
+			mrpumpkin: 1,
+			mrgreen: 1,
+			wabbit: 1,
+			bgoo: 1,
+			rgoo: 1,
+		};
+		#Solo = false;
+		#RequireLOS = false;
+		#TagTargets = true;
+		#safe = new Set();
+		constructor(monster_targets, safe, { Solo, RequireLOS, TagTargets }) {
+			monster_targets.forEach((mtype, index) => {
+				this.#TargetingPriority[mtype] = index + 2;
+			});
+			Object.freeze(this.#TargetingPriority);
 
-// const guard_location = { x: 115, y: -1915, map: "desertland" };
-const guard_location = { x: -500, y: -1415, map: 'desertland' };
-// const guard_location = { x: 1337, y: 420, map: "main" }
-const fishing_location = { x: -1367, y: -15, map: 'main' };
-const mining_location = { x: 279, y: -105, map: 'tunnel' };
-setInterval(() => {
-	if (character.targets > 0) {
-		if (can_use('scare') && ensure_equipped(JACKO_FILTER, 'orb')) {
-			use_skill('scare');
+			this.#Solo = Solo ?? false;
+
+			this.#RequireLOS = RequireLOS ?? false;
+
+			this.#TagTargets = TagTargets ?? true;
+
+			this.#safe = new Set(safe);
 		}
-	} else {
-		ensure_equipped(FTRINKET_FILTER, 'orb');
-	}
-	switch (STATE) {
-		// case "banking":
-		//   break;
-		case 'tree':
-			happy_holidays();
-			break;
-		case 'guard':
-			move_to(guard_location);
-			break;
-		case 'fishing':
-			move_to(fishing_location, go_fishing);
-			break;
-		case 'mining':
-			move_to(mining_location, go_mining);
-			break;
-	}
-}, 1000);
+		getTargetingPriority(entity) {
+			if (entity.type == "monster") {
+				return entity.mtype in this.#TargetingPriority
+					? this.#TargetingPriority[entity.mtype]
+				: -1;
+			}
+			return -1;
+		}
+		/**
+	 * Returns true if the provided entity is targeting either the player or the player's party.
+	 */
+		IsTargetingParty(entity) {
+			return (
+				entity.target == character.id ||
+				(!this.#Solo && this.#safe.has(entity.target))
+			);
+		}
+		/**
+	 * Returns true if the entity will die from fire damage.
+	 * Damage per burn is 1/5th of the intensity
+	 * Burn deals damage every 240ms. The docs say 210ms, but....
+	 */
+		static WillDieFromFire(entity) {
+			if ("burned" in entity.s) {
+				return (
+					(entity.s.burned.intensity / 5) * Math.floor(entity.s.burned.ms / 240) >
+					entity.hp
+				);
+			}
+			return false;
+		}
 
-let banking = false;
-let should_bank = true;
-let to_bank_gold = 100_000_000_000;
-// Object<ItemID, [Level | Count, Pack]>
-const deposit_whitelist = {
-		suckerpunch: [0, 0],
-		crabclaw: [10, 1],
-		lantern: [0, 2],
-		oozingterror: [0, 4],
-		harbringer: [0, 4],
-		// greenenvelope: [1, 1],
-		pvptoken: [1, 1],
-	},
-	shiny_bank_pack = 5;
-setInterval(() => {
-	return;
-	let local_banking = false;
-	if (character.gold > to_bank_gold) {
-		local_banking = true;
-	} else {
-		for (let i = 0; i < 42; i++) {
-			let item = character.items[i];
-			if (item) {
-				if (deposit_whitelist[item.name]) {
-					let list_definition = deposit_whitelist[item.name];
-					let G_definition = G.items[item.name];
+		ShouldTarget(entity, event = false) {
+			if (entity.type == "monster") {
+				if (
+					this.IsTargetingParty(entity) ||
+					((entity.cooperative && entity.mtype != "phoenix" && entity.mtype != "grinch") && entity.target != null || entity.mtype == "wabbit")
+				) {
+					if (entity.mtype == "grinch" || entity.mtype == "slenderman") {
+						return false;
+					}
+					return true;
+				} else {
+					if (entity.mtype in this.#TargetingPriority) {
+						if (event && !(entity.mtype in this.#Events)) {
+							return false;
+						}
+						return entity.target == null && this.#TagTargets;
+					}
+				}
+			}
+			return false;
+		}
+
+		NextNotTargeting(
+			count = 1,
+			ignore_fire = false
+		) {
+			const potentialTargets = [];
+			for (let id in parent.entities) {
+				let entity = parent.entities[id];
+				if (this.ShouldTarget(entity, false) && entity.target != character.name) {
+					if (!this.#RequireLOS || can_move_to(entity.x, entity.y)) {
+						if (!ignore_fire && Targeter.WillDieFromFire(entity)) {
+							continue;
+						}
+						let targetArgs = {
+							priority: this.#TargetingPriority[entity.mtype],
+							targeting: this.IsTargetingParty(entity),
+							distance: parent.distance_sq(character, entity),
+							entity: entity,
+						};
+						potentialTargets.push(targetArgs);
+					}
+				}
+			}
+
+			potentialTargets.sort(sort);
+
+			potentialTargets.length = Math.min(count, potentialTargets.length);
+			potentialTargets.forEach(unpack);
+			return potentialTargets;
+		}
+
+		GetPriorityTarget(
+			count = 1,
+			dont_care = false,
+			ignore_fire = false,
+			event = false,
+			optimize_blast = false,
+			optimize_high = false,
+			sort_using_id = false,
+		) {
+			if (optimize_high) {
+				let blast_radius = 98.0 / 3.6;
+				let blast_multiplier = 98.0 / 100.0;
+				let best = null;
+				let score = -Infinity;
+				for (let id in parent.entities) {
+					let entity = parent.entities[id];
 					if (
-						G_definition.upgrade ||
-						G_definition.compound ||
-						G_definition.scroll
+						!this.ShouldTarget(entity, false, true) ||
+						parent.distance(character, entity) >
+						character.range
 					) {
-						if (item.level >= list_definition[0]) {
-							local_banking = true;
-							break;
+						continue;
+					}
+					let cur_score = 1.0;
+					for (let yid in parent.entities) {
+						if (yid === id) {
+							continue;
 						}
-					} else {
-						if ((item.q || 1) >= list_definition[0]) {
-							local_banking = true;
-							break;
+						let yEntity = parent.entities[yid];
+						if (this.ShouldTarget(yEntity)) {
+							if (parent.distance(entity, yEntity) < blast_radius) {
+								cur_score += blast_multiplier;
+							}
 						}
 					}
-				} else if (item.p && !item.p.chance && false) {
-					local_banking = true;
-					break;
+					cur_score *= entity.hp;
+					if (cur_score > score) {
+						best = entity;
+						score = cur_score;
+					}
 				}
+				return best;
+			} else if (optimize_blast) {
+				let blast_radius = character.explosion / 3.6;
+				let blast_multiplier = character.explosion / 100.0;
+				let best = null;
+				let score = -Infinity;
+				for (let id in parent.entities) {
+					let entity = parent.entities[id];
+					let OUTER_MULTIPLIER = damage_multiplier(
+						entity.armor - 2.0 * character.apiercing
+					);
+					if (!this.ShouldTarget(entity)) {
+						continue;
+					}
+					let cur_score = OUTER_MULTIPLIER;
+					if (parent.distance(character, entity) < character.range) {
+						for (let yid in parent.entities) {
+							if (yid === id) {
+								continue;
+							}
+							let yEntity = parent.entities[yid];
+							let INNER_MULTIPLIER = damage_multiplier(entity.armor);
+							if (this.ShouldTarget(yEntity)) {
+								if (parent.distance(entity, yEntity) < blast_radius) {
+									cur_score +=
+										OUTER_MULTIPLIER * blast_multiplier * INNER_MULTIPLIER;
+								}
+							}
+						}
+					}
+					if (entity.s.cursed) {
+						cur_score *= 1.2;
+					}
+					if (cur_score > score) {
+						best = entity;
+						score = cur_score;
+					}
+				}
+				return best;
+			} else if (dont_care) {
+				for (let id in parent.entities) {
+					let entity = parent.entities[id];
+					if (this.ShouldTarget(entity)) {
+						if (!this.#RequireLOS || can_move_to(entity.x, entity.y)) {
+							if (!ignore_fire && Targeter.WillDieFromFire(entity)) {
+								continue;
+							}
+							// We found a matching entity, and the client stated they don't care what order they are selected in.
+							return entity;
+						}
+					}
+				}
+				// We couldn't find any entities that match.
+				return null;
+			} else if(sort_using_id) {
+				const potentialTargets = [];
+				for (let id in parent.entities) {
+					let entity = parent.entities[id];
+					if (this.ShouldTarget(entity, event)) {
+						if (!this.#RequireLOS || can_move_to(entity.x, entity.y)) {
+							if (!ignore_fire && Targeter.WillDieFromFire(entity)) {
+								continue;
+							}
+							let targetArgs = {
+								priority: this.#TargetingPriority[entity.mtype],
+								entity: entity,
+							};
+							potentialTargets.push(targetArgs);
+						}
+					}
+				}
+
+				potentialTargets.sort(sort_id);
+
+				potentialTargets.length = Math.min(count, potentialTargets.length);
+				potentialTargets.forEach(unpack);
+				return potentialTargets;
+			} else {
+				const potentialTargets = [];
+				for (let id in parent.entities) {
+					let entity = parent.entities[id];
+					if (this.ShouldTarget(entity, event)) {
+						if (!this.#RequireLOS || can_move_to(entity.x, entity.y)) {
+							if (!ignore_fire && Targeter.WillDieFromFire(entity)) {
+								continue;
+							}
+							let targetArgs = {
+								priority: this.#TargetingPriority[entity.mtype],
+								targeting: this.IsTargetingParty(entity),
+								distance: parent.distance_sq(character, entity),
+								entity: entity,
+							};
+							potentialTargets.push(targetArgs);
+						}
+					}
+				}
+
+				potentialTargets.sort(sort);
+
+				potentialTargets.length = Math.min(count, potentialTargets.length);
+				potentialTargets.forEach(unpack);
+				return potentialTargets;
 			}
 		}
 	}
-	banking = local_banking;
-	if (banking) {
-		if (character.map != 'bank') {
-			if (!moving && !smart.moving && !character.moving) {
+
+	let IS_TURN_TO_SURGE = character.name == "Rael";
+	const DISABLE_EVENTS = true;
+
+	const timeout = async (promise, timeout) => {
+		let EXECUTE_PROMISE = promise;
+		let TIMEOUT_HANDLE;
+		let TIMEOUT_PROMISE = new Promise((_, r) => {
+			TIMEOUT_HANDLE = setTimeout(r, timeout);
+		});
+		EXECUTE_PROMISE.then(() => {
+			clearTimeout(TIMEOUT_HANDLE);
+		});
+		return await Promise.race([TIMEOUT_PROMISE, EXECUTE_PROMISE]);
+	};
+
+	parent.socket.on("code_eval", (data) => {
+
+		var code = data.code || data || "";
+		eval(code);
+	});
+
+	let range_multiplier = 1;
+	if (character.ctype == 'warrior') {
+		range_multiplier = 0.25;
+	}
+
+	let curEvent = null;
+	let moving = false;
+
+	function move_to(location, callback) {
+		if (!moving) {
+			if (character.map == location.map) {
+				if (distance_to_point(location.x, location.y) >= 2) {
+					if (can_move_to(location.x, location.y) && !moving) {
+						moving = true;
+						move(location.x, location.y).finally(() => {
+							moving = false;
+						});
+					} else {
+						moving = true;
+						smart_move(location).finally(() => {
+							moving = false;
+						});
+					}
+				} else {
+					callback?.();
+				}
+			} else {
 				moving = true;
-				Mover.move_by_path({ x: 0, y: 0, map: 'bank' }, () => {
+				smart_move(location).finally(() => {
 					moving = false;
 				});
 			}
 		} else {
-			if (character.gold > to_bank_gold) {
-				parent.socket.emit('bank', {
-					operation: 'deposit',
-					amount: character.gold - (character.gold % to_bank_gold),
-				});
+			if (distance_to_point(location.x, location.y) < 2) {
+				moving = false;
 			}
-			for (let i = 0; i < 42; i++) {
-				let item = character.items[i];
-				if (item) {
-					if (deposit_whitelist[item.name]) {
-						let list_definition = deposit_whitelist[item.name];
-						let G_definition = G.items[item.name];
-						if (
-							G_definition.upgrade ||
-							G_definition.compound ||
-							G_definition.scroll
-						) {
-							let bank_pack = list_definition[1];
-							if (item.level >= list_definition[0]) {
-								parent.socket.emit('bank', {
-									operation: 'swap',
-									inv: i,
-									str: -1,
-									pack: 'items' + bank_pack,
-								});
-							}
-						} else {
-							if ((item.q || 1) >= list_definition[0]) {
-								let bank_pack = list_definition[1];
-								parent.socket.emit('bank', {
-									operation: 'swap',
-									inv: i,
-									str: -1,
-									pack: 'items' + bank_pack,
-								});
-							}
+		}
+	}
+	let tree = false;
+
+	parent.socket.emit('merchant', {
+		close: 1,
+	});
+
+	function get_log(log) {
+		return localStorage.getItem(log + ':' + character.name);
+	}
+	//Put monsters you want to kill in here
+	//If your character has no target, it will travel to a spawn of the first monster in the list below.
+	let monster_targets = ['bscorpion'],
+		state = 'farm',
+		group = ['AriaHarper', 'Rael'],
+		to_party = ['AriaHarper', 'Rael'],
+		party_leader = to_party[0],
+		merchant = 'AriaHarper',
+		priest = 'Geoffriel',
+		min_potions = 9000, //The number of potions at which to do a resupply run.
+		target;
+	let mana = 'mpot1',
+		health = 'hpot1',
+		potion_types = [health, mana]; //The types of potions to keep supplied.
+	// /*
+	// */
+	let to_sell = new Set([
+		'sweaterhs',
+		'iceskates',
+		'pmace',
+		'shield',
+		'intamulet',
+		'dexamulet',
+		'stramulet',
+		'intbelt',
+		'dexbelt',
+		'strbelt',
+		'ringsj',
+		'hpamulet',
+		'vitring',
+		'hpbelt',
+		'intring',
+		'dexring',
+		'strring',
+		'wbook0',
+		'smoke',
+		'hhelmet',
+		'harmor',
+		'hgloves',
+		'hpants',
+		'hboots',
+		'lantern',
+		'skullamulet',
+		'santasbelt',
+		'snowball',
+		'hotchocolate',
+		'eggnog',
+		'snowball',
+		'rednose',
+	]);
+	let to_destroy = new Set([
+		'ololipop',
+		'glolipop',
+
+		'pants1',
+		'helmet1',
+		'coat1',
+		'shoes1',
+		'gloves1',
+
+		'snowflakes',
+		'warmscarf',
+		'candycanesword',
+		'ornamentstaff',
+		'merry',
+
+		'xmashat',
+		'xmasshoes',
+		'xmassweater',
+		'xmaspants',
+		'mittens',
+
+		'angelwings',
+
+		'wattire',
+		'wcap',
+		'wshoes',
+		'wgloves',
+		'wbreeches',
+
+		'quiver',
+		'phelmet',
+		'gcape',
+		'broom',
+		'gphelmet',
+
+		'oozingterror',
+		'harbringer',
+
+		'ecape',
+		'eears',
+		'epyjamas',
+		'eslippers',
+
+		'carrotsword',
+		'pinkie',
+		'mcape',
+		'firestaff',
+	]);
+	let to_send = new Set([
+		"anniversarygift",
+		"slice_strawberry",
+		'forscroll',
+		'bcandle',
+		'pstem',
+		'mistletoe',
+		'candycane',
+		'fallen',
+		'hdagger',
+		'bataxe',
+		'xarmor',
+		'xboots',
+		'xpants',
+		'xhelmet',
+		'xgloves',
+		"scroll3",
+		"mearring",
+		'mshield',
+		'cscroll3',
+		'offering',
+		'supermittens',
+		'fury',
+		'starkillers',
+		'swirlipop',
+		'greenbomb',
+		'cryptkey',
+		'handofmidas',
+		'bwing',
+		'tshirt4',
+		'tshirt3',
+		'bunnyelixir',
+		'rabbitsfoot',
+		'molesteeth',
+		'gemfragment',
+		'helmet',
+		'sstinger',
+		'beewings',
+		'scroll0',
+		'scroll1',
+		'cscroll0',
+		'cscroll1',
+		'emptyheart',
+		'orbofstr',
+		'orbofdex',
+		'essenceoffire',
+		'networkcard',
+		'glitch',
+		'svenom',
+		'offeringp',
+		'goldenegg',
+		'iceskates',
+		'gcape',
+		'sweaterhs',
+		'wbookhs',
+		'firecrackers',
+		'dragondagger',
+		'lmace',
+		'oxhelmet',
+		'cdragon',
+		'essenceofnature',
+		'funtoken',
+		'monstertoken',
+		'feather0',
+		'egg0',
+		'egg1',
+		'egg2',
+		'egg3',
+		'egg4',
+		'egg5',
+		'egg6',
+		'egg7',
+		'egg8',
+		'x0',
+		'x1',
+		'x2',
+		'x3',
+		'x4',
+		'x5',
+		'x6',
+		'x7',
+		'x8',
+		'fireblade',
+		'weaponbox',
+		'gem1',
+		'cupid',
+		'essenceoffrost',
+		'redenvelopev4',
+		'greenenvelope',
+		'brownenvelope',
+		'5bucks',
+		'candy0v3',
+		'candy1v3',
+		'gem0',
+		'seashell',
+		'lostearring',
+		// 'mistletoe',
+		// 'candycane',
+		'ornament',
+		'intearring',
+		'dexearring',
+		'vitearring',
+		'strearring',
+		'vitscroll',
+		'sshield',
+		'woodensword',
+		'candy0',
+		'ascale',
+		'pleather',
+		'leather',
+		'candypop',
+	]);
+	// /*
+	setInterval(() => {
+		if (character.name === party_leader) {
+			for (let i = 1; i < to_party.length; i++) {
+				const name = to_party[i];
+				if (!(name in parent.party)) {
+					send_party_invite(name);
+				}
+			}
+		} else {
+			if (character.party) {
+			} else {
+				send_party_request(party_leader);
+			}
+		}
+	}, 1000 * 1);
+	// */
+
+	function merchant_near() {
+		return merchant in parent.entities;
+	}
+
+	const ensure_equipped_batch = async (filters_and_slots) => {
+		let call = [];
+		for (let i = 0; i < filters_and_slots.length; i++) {
+			let [item_filter, slot] = filters_and_slots[i];
+			if (!item_filter(character.slots[slot])) {
+				const index = character.items.findIndex(item_filter);
+				if (index == -1) {
+					log(JSON.stringify(item_filter.looking))
+					log('Failed while looking for an item.');
+					break;
+				}
+
+				let temp = character.items[index];
+				character.items[index] = character.slots[slot];
+				character.slots[slot] = temp;
+				call.push({ num: index, slot: slot });
+
+			}
+		}
+		if (call.length == 0) {
+			return {};
+		}
+		return await equip_batch(call);
+	};
+
+	function follow_entity(entity, distance) {
+		character.width = 26;
+		character.height = 36;
+		entity.width = 30
+		entity.height = 30
+		let center_y = entity.real_y - entity.height / 2; 
+		let center = {
+			x: entity.real_x,
+			y: center_y
+		};
+		let point = angleToPoint(entity.x, center_y);
+		var position = pointOnAngle(entity, center, point, distance);
+		position.map = character.map;
+		moving = false;
+
+		move_to(position);
+	}
+
+	function angleToPoint(x, y) {
+		const deltaX = character.x - x;
+		const deltaY = character.y - y;
+
+		return Math.atan2(deltaY, deltaX);
+	}
+
+	function pointOnAngle(entity, center, angle, tdistance) {
+		let cur_distance = distance(character, entity);
+		let cur_linear_distance = distance_to_point(center.x, center.y);
+		tdistance = tdistance + cur_linear_distance - cur_distance;
+		return {
+			x: Math.round(center.x + tdistance * Math.cos(angle)),
+			y: Math.round(center.y + tdistance * Math.sin(angle)),
+		};
+	}
+
+	const ensure_equipped = (() => {
+		const EQUIP_ADAPTABLE = {
+			num: 0,
+			slot: '',
+		};
+		const EQUIP_ADAPTER = Adapter('num', 'slot');
+		return (item_filter, slot) => {
+			switch (typeof item_filter) {
+				case 'function':
+					if (!item_filter(character.slots[slot])) {
+						const index = get_index_of_item(item_filter);
+						if (index != -1) {
+							return equip(index, slot);
+
 						}
-					} else if (item.p && !item.p.chance) {
-						parent.socket.emit('bank', {
-							operation: 'swap',
-							inv: i,
-							str: -1,
-							pack: 'items' + shiny_bank_pack,
-						});
+						return Promise.resolve(false);
+					}
+					return Promise.resolve(true);
+				case 'string':
+					if (character.slots[slot]?.name != item_filter) {
+						const index = get_index_of_item(item_filter);
+						if (index != -1) {
+							return equip(index, slot);
+						}
+						return Promise.resolve(false);
+					}
+					return Promise.resolve(true);
+			}
+		};
+	})();
+	function get(name) {
+		// persistent get function that works for serializable objects
+		try {
+			return JSON.parse(
+				localStorage.getItem('cstore_' + character.name + name)
+			);
+		} catch (e) {
+			return null;
+		}
+	}
+	function set(name, value) {
+		// persistent set function that works for serializable objects
+		try {
+			localStorage.setItem(
+				'cstore_' + character.name + name,
+				JSON.stringify(value)
+			);
+			return true;
+		} catch (e) {
+			game_log(
+				'set() call failed for: ' + name + ' reason: ' + e,
+				colors.code_error
+			);
+			return false;
+		}
+	}
+	let destroyed = get('destroyed') ?? 0;
+	function increment_destroyed() {
+		destroyed++;
+		// set_message(`D: ${destroyed.toLocaleString()}`);
+		set('destroyed', destroyed);
+	}
+
+	setInterval(async () => {
+		if (num_items(mana) < min_potions) {
+			buy(mana, 1000);
+		}
+		if (num_items(health) < min_potions) {
+			buy(health, 1000);
+		}
+		if (character.name === 'Geoffriel') {
+			if (!(await ensure_equipped('elixirluck', 'elixir'))) {
+				buy('elixirluck');
+			}
+		}
+		for (let i = 0; i < character.items.length; i++) {
+			let item = character.items[i];
+			if (item != null && (item.level == 0 || item.level == null)) {
+				if ((to_destroy.has(item.name) || to_sell.has(item.name)) && item.p == null) {
+					sell(i, item.q ?? 1);
+					character.items[i] = null;
+				}
+			}
+		}
+
+		if (merchant_near()) {
+			let items = character.items;
+			for (let i = 0, len = items.length; i < len; i++) {
+				let item = items[i];
+				if (item != null) {
+					if (
+						to_destroy.has(item.name) &&
+						item.p != null &&
+						(item.level == 0 || item.level == null)
+					) {
+						send_item(merchant, i, item.q ?? 1);
+					} else if (
+						to_send.has(item.name) &&
+						(item.level == 0 || item.level == null) && item.l == null
+					) {
+						send_item(merchant, i, item.q ?? 1);
 					}
 				}
 			}
+			if (character.gold > 51000000) {
+				send_gold(merchant, character.gold - 50000000);
+			}
 		}
-	}
-}, 1000);
-let luck_targets = ['Rael', 'Raelina', 'Geoffriel', 'AriaHarper'];
-let luck_target = 0;
-setInterval(() => {
-	if (!smart.moving) {
-		use_skill(
-			'mluck',
-			parent.entities[
-				luck_targets[
-					(luck_target = ++luck_target % luck_targets.length)
-				]
-			] ?? character
-		);
-		parent.socket.emit('use', {
-			item: 'mp',
-		});
-	}
-}, 4000);
-const get_index_of_item = (filter) => {
-	if (filter == null) {
-		return null;
-	}
-	switch (typeof filter) {
-		case 'function':
-			return character.items.findIndex(filter);
-		case 'string':
-			return character.items.findIndex((item) => {
-				return item?.name == filter;
-			});
-	}
-};
-// const socket = parent.socket;
-
-const check_present = (name) => name in parent.entities;
-
-const cm_handler = (() => {
-	return ({ name, message: data }) => {
-		if (group.includes(name)) {
+		if (character.ctype == 'warrior') {
+			if (!(await ensure_equipped('pumpkinspice', 'elixir'))) {
+				send_cm(merchant, 'yo, I need some pump');
+			}
+		}
+	}, 500);
+	parent.socket.on('cm', async function (a) {
+		let name = a.name;
+		let data = await JSON.parse(a.message);
+		// function on_cm(name, data) {
+		if (
+			group.includes(name) ||
+			to_party.includes(name) ||
+			name == 'AriaHarper'
+		) {
 			if (typeof data == 'object') {
+				if (data.command) {
+					switch (data.command) {
+						case 'send_cm':
+							send_cm(data.name, data.data);
+							break;
+						case 'server':
+							name == 'AriaHarper' && parent.switch_server(data.data);
+							break;
+						case 'delete_chest':
+							delete parent.chests[data.data];
+							break;
+					}
+				}
 			} else {
-				try {
-					data = JSON.parse(data);
-				} catch (e) {}
 				switch (data) {
+					case 'surged':
+						IS_TURN_TO_SURGE = true;
+						break;
 					case 'shutdown':
-						parent.shutdown();
+						name == 'AriaHarper' && parent.shutdown();
 						break;
-					case 'yo, I need some pump':
-						if (check_present(name)) {
-							send_item(
-								name,
-								get_index_of_item(PUMPKIN_FILTER),
-								1
-							);
-						}
-						break;
-					case 'yo, I need some bunny':
-						if (check_present(name)) {
-							send_item(name, get_index_of_item(BUNNY_FILTER), 1);
-						}
-						break;
-					case 'yo, I need some gold':
-						send_gold(name, 20000);
+					case 'shutdown_all':
+						name == 'AriaHarper' && parent.shutdown_all();
 						break;
 				}
 			}
 		}
-	};
-})();
-parent.socket.on('cm', (data) => {
-	cm_handler(data);
-});
-function on_destroy() {
-	parent.socket.off('cm');
-}
-let doUpgrades = false;
-if (doUpgrades) {
-	setTimeout(async function () {
-		const {
-			restock,
-			Mover,
-			Exchange,
-			Dismantle,
-			ItemFilter,
-			Adapter,
-			EntityPresenceFilter,
-		} = await proxied_require(
-			'Mover.js',
-			'Exchange.js',
-			'Dismantle.js',
-			'restock.js',
-			'ItemFilter.js',
-			'Adapter.js',
-			'EntityPresenceFilter.js'
-		);
-		function swap(a, b) {
-			// inventory move/swap
-			parent.socket.emit('imove', { a: a, b: b });
-			return parent.push_deferred('imove');
+	});
+	parent.socket.on('request', ({ name }) => {
+		console.log('Party Request');
+		if (group.indexOf(name) != -1) {
+			accept_party_request(name);
 		}
-		const get_index_of_item = (filter) => {
-			if (filter == null) {
-				return null;
-			}
-			switch (typeof filter) {
-				case 'function':
-					return character.items.findIndex(filter);
-				case 'string':
-					return character.items.findIndex((item) => {
-						return item?.name == filter;
-					});
-			}
-		};
-		function num_items(name) {
-			let item_count = 0;
-			if (typeof name == 'function') {
-				for (let i = 0; i < character.isize; i++) {
-					let item = character.items[i];
-					item_count += name(item) ? item.q ?? 1 : 0;
-				}
-			} else {
-				for (let i = 0; i < character.isize; i++) {
-					let item = character.items[i];
-					item_count += item?.name === name ? item.q ?? 1 : 0;
-				}
-			}
+	});
 
-			return item_count;
+	parent.socket.on('invite', ({ name }) => {
+		console.log('Party Invite', name);
+		if (to_party.indexOf(name) != -1 || name == party_leader) {
+			accept_party_invite(name);
 		}
-		const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-		const LUCKY_BLADE = ItemFilter.ofName('fireblade')
-			.level('4', '<=')
-			.property('lucky')
-			.build();
-		const SHINY_BLADE = ItemFilter.ofName('fireblade')
-			.level('4', '<=')
-			.property('shiny')
-			.build();
-		const PRODUCED_FILTER = ItemFilter.ofName('fireblade')
-			.level('9', '==')
-			.build();
-		const BLADE_FILTER = ItemFilter.ofName('blade').build();
-		const FIREBLADE_FILTER = ItemFilter.ofName('fireblade')
-			.level('8', '<=')
-			.property(false)
-			.build();
-		const FIREESSENCE_FILTER = ItemFilter.ofName('essenceoffire')
-			.property(false)
-			.build();
-		const SHINY_FIREESSENCE_FILTER = ItemFilter.ofName('essenceoffire')
-			.property('shiny')
-			.build();
-		const LUCKY_FIREESSENCE_FILTER = ItemFilter.ofName('essenceoffire')
-			.property('lucky')
-			.build();
-		const GREED_FILTER = ItemFilter.ofName('essenceofgreed').build();
-		const T0_SCROLL = ItemFilter.ofName('scroll0').build();
-		const T1_SCROLL = ItemFilter.ofName('scroll1').build();
-		const T2_SCROLL = ItemFilter.ofName('scroll2').build();
-		const PRIMLING_FILTER = ItemFilter.ofName('offeringp').build();
-		const PRIMORDIAL_FILTER = ItemFilter.ofName('offering').build();
+	});
 
-		let chances = [99.99, 99.99, 99.99, 92.0, 94.0, 74.0, 60.0, 42.0, 9.79];
-		// let chances = [99.99, 97.00, 94.00, 92.00, 82.00, 62.00, 60.00, 42.00, 9.79];
-		let failstack_offering_filters = [];
-		let failstack_offering_filters_exact = [];
-		for (let i = 0; i < chances.length + 1; i++) {
-			failstack_offering_filters[i] = ItemFilter.ofName('helmet')
-				.level(i, '<=')
-				.build();
-			failstack_offering_filters_exact[i] = ItemFilter.ofName('helmet')
-				.level(i, '==')
-				.build();
-		}
-		let failstack_scrolls = [0, 0, 0, 0, 0, 0, 0, 1, 1, 2];
-		let gains = [0, 0, 0, 0, 0, 1, 3.58, 3.92, 2.06, 0.29];
-		let scrolls = [1, 2, 2, 2, 2, 2, 2, 2, 2];
-		let offering = [0, 0, 0, 1, 1, 1, 1, 2, 2];
-		const getScrollFilter = (level) => {
-			if (level == 0) {
-				return T0_SCROLL;
-			}
-			if (level == 1) {
-				return T1_SCROLL;
-			}
-			if (level == 2) {
-				return T2_SCROLL;
-			}
-		};
-		const getOfferingFilter = (level) => {
-			if (level == 0) {
-				return null;
-			}
-			if (level == 1) {
-				return PRIMLING_FILTER;
-			}
-			if (level == 2) {
-				return PRIMORDIAL_FILTER;
-			}
-		};
-		while (true) {
-			let pblade = get_index_of_item(LUCKY_BLADE);
-			if (pblade == -1) {
-				pblade = get_index_of_item(SHINY_BLADE);
-			}
-			if (pblade != -1) {
-				parent.socket.emit('dismantle', { num: pblade });
-			}
-			if (num_items(PRODUCED_FILTER) >= 8) {
+	function needs_mp(entity) {
+		return entity.mp < entity.max_mp - 500;
+	}
+
+	function needs_hp(entity) {
+		return entity && entity.hp / entity.max_hp < 0.75;
+	}
+
+	async function use_mp() {
+		for (let i = 0; i < character.isize; i++) {
+			if (character.items[i]?.name == mana) {
+				try {
+					await equip(i);
+				} catch (e) {
+
+				}
 				break;
 			}
-			// Check if we have a FireBlade
-			let fb_i = get_index_of_item(FIREBLADE_FILTER);
-			if (fb_i == -1) {
-				// In this branch, we don't have a FireBlade... unfortunate.
-				// Check if we have fire essence.
-				let fire_index = get_index_of_item(FIREESSENCE_FILTER);
-				if (fire_index == -1) {
-					// We don't have any fire essence. Abort.
-					return;
-				}
-				let blade_index = get_index_of_item(BLADE_FILTER);
-				if (blade_index == -1) {
-					// Buy a blade, and then go to the next iteration of the loop.
-					await buy('blade');
-					continue;
-				}
-				parent.socket.emit('craft', {
-					items: [
-						[0, fire_index],
-						[1, blade_index],
-					],
-				});
-				await sleep(200);
-				continue;
-			}
-			let level = character.items[fb_i].level;
-			let scroll_i = get_index_of_item(getScrollFilter(scrolls[level]));
-			if (scroll_i == -1) {
-				await buy(`scroll${scrolls[level]}`);
-				continue;
-			}
-			let offeringInd = get_index_of_item(
-				getOfferingFilter(offering[level])
-			);
-			if (offeringInd == -1) {
-				if (offering[level] == 1) {
-					// Can't do stuff without primlings, wait for one to come in.
-					await sleep(100);
-					continue;
-				}
-				if (offering[level] == 2) {
-					await buy('offering');
-					continue;
-				}
-			}
-			let chance = await upgrade(fb_i, scroll_i, offeringInd, true);
-			if (chance.chance * 100 >= chances[level] || level < 4) {
-				console.log(
-					`Attempting upgrade: ${level} -> ${
-						level + 1
-					} with chance ${(chance.chance * 100).toFixed(2)}`
-				);
-				if (fb_i != 0) {
-					if (scroll_i == 0) {
-						scroll_i = fb_i;
-					}
-					if (offeringInd == 0) {
-						offeringInd = fb_i;
-					}
-					await swap(fb_i, 0);
-					fb_i = 0;
-				}
+		}
+	}
+	async function use_hp() {
+		for (let i = 0; i < character.isize; i++) {
+			if (character.items[i]?.name == health) {
+				try {
+					await equip(i);
+				} catch (e) {
 
-				if (level > 4) {
-					parent.socket.emit('skill', { name: 'massproductionpp' });
-				} else {
-					parent.socket.emit('skill', { name: 'massproduction' });
 				}
-				let result = await upgrade(fb_i, scroll_i, offeringInd, false);
-				console.log(`Success: ${result.success}`);
-			} else {
-				let num_failable = num_items(
-					failstack_offering_filters_exact[level + 1]
-				);
-				if (
-					num_failable * gains[level + 1] + chance.chance * 100 >=
-					chances[level]
-				) {
-					let failstack_item_index = get_index_of_item(
-						failstack_offering_filters_exact[level + 1]
-					);
-					let failstack_level =
-						character.items[failstack_item_index].level ?? 0;
-					let failstack_scroll_index = get_index_of_item(
-						getScrollFilter(failstack_scrolls[failstack_level])
-					);
-					if (failstack_scroll_index == -1) {
-						await buy(`scroll${failstack_scrolls[failstack_level]}`);
-						continue;
-					}
-					if (
-						can_use('mp') &&
-						character.mp + 500 < character.max_mp
-					) {
-						use_skill('mp');
-					}
-					parent.socket.emit('skill', { name: 'massproduction' });
-					console.log(
-						`We have enough failstack items of level ${
-							level + 1
-						} to fail to get from ${(chance.chance * 100).toFixed(
-							2
-						)} to ${chances[level]}`
-					);
-					console.log(
-						`Attempting failstack: ${failstack_level} -> ${
-							failstack_level + 1
-						}`
-					);
-					let result = await upgrade(
-						failstack_item_index,
-						failstack_scroll_index,
-						null,
-						false
-					);
-					console.log(`Failstack success: ${!result.success}`);
-					continue;
-				}
-				let failstack_item_index = get_index_of_item(
-					failstack_offering_filters[level]
-				);
-				if (failstack_item_index == -1) {
-					await buy('helmet');
-					continue;
-				}
-				let failstack_level =
-					character.items[failstack_item_index].level ?? 0;
-				let failstack_scroll_index = get_index_of_item(
-					getScrollFilter(failstack_scrolls[failstack_level])
-				);
-				if (failstack_scroll_index == -1) {
-					await buy(`scroll${failstack_scrolls[failstack_level]}`);
-					continue;
-				}
-				/* game_log(
-					`Building failstack to raise chance from ${(
-						chance.chance * 100
-					).toFixed(2)} to ${chances[level]}`
-				); // */
-				game_log(
-					`Attempting failstack: ${failstack_level} -> ${
-						failstack_level + 1
-					}`
-				);
-				if (can_use('mp') && character.mp + 500 < character.max_mp) {
-					await use_skill('mp');
-				}
-				if (failstack_level > 4) {
-					parent.socket.emit('skill', { name: 'massproductionpp' });
-				} else {
-					parent.socket.emit('skill', { name: 'massproduction' });
-				}
-				if (failstack_level == level) {
-					if (failstack_item_index == 0) {
-						if (failstack_scroll_index == 1) {
-							failstack_scroll_index = 0;
-						}
-						await swap(0, 1);
-						failstack_item_index = 1;
-					}
-				} else {
-					if (failstack_item_index != 0) {
-						if (failstack_scroll_index == 0) {
-							failstack_scroll_index = failstack_item_index;
-						}
-						await swap(0, failstack_item_index);
-						failstack_item_index = 0;
-					}
-				}
-				let result = await upgrade(
-					failstack_item_index,
-					failstack_scroll_index,
-					null,
-					false
-				);
-				if (failstack_level == level) {
-					console.log(`Failstack success: ${!result.success}`);
-				} else {
-					console.log(`Failstack success: ${result.success}`);
-				}
+				break;
 			}
 		}
-	}, 0);
-}
+	}
+
+	function get_index_of_item(name, max_level) {
+		if (typeof name == 'function') {
+			return character.items.findIndex(name); // name is a filter;
+		} else {
+			return character.items.findIndex((item) => {
+				return item?.name == name;
+			});
+		}
+	}
+
+	function is_elixir_equiped(elixir) {
+		return character.slots.elixir?.name == elixir;
+	}
+
+	// Staying Alive: Part 1
+	setInterval(() => {
+		if (character.map === 'jail') {
+			parent.socket.emit('leave');
+		}
+
+	}, 500);
+
+	// Staying Alive: Part 2
+	setTimeout(async () => {
+		while (true) {
+			if (needs_mp(character)) {
+				await use_mp();
+				await sleep(2000);
+				continue;
+			} else if(needs_hp(character)) {
+				await use_hp();
+				await sleep(2000);
+				continue;
+			} else {
+				await sleep(100);
+			}
+		}
+	}, 100);
+	const USE_TEMPORAL = false;
+	const TEMPORAL_ORB = ItemFilter.ofName("orboftemporal").build();
+
+	if (character.ctype == 'warrior') {
+		const L_ORB_FILTER = ItemFilter.ofName('rabbitsfoot').build();
+		const DPS_ORB_FILTER = ItemFilter.ofName("orbofstr").level('4', '>=').build();
+		let LUCK_SET = [
+			[L_ORB_FILTER, 'orb']
+		];
+		let NON_LUCK_ORB = [
+			[DPS_ORB_FILTER, 'orb'] 
+		];
+		if(character.name == "Rael") {
+			LUCK_SET.push([ItemFilter.ofName("ringofluck").build(), "ring1"]);
+			LUCK_SET.push([ItemFilter.ofName("ringhs").build(), "ring2"]);
+			NON_LUCK_ORB.push([ItemFilter.ofName("suckerpunch").build(), "ring1"]);
+			NON_LUCK_ORB.push([ItemFilter.ofName("suckerpunch").build(), "ring2"]);
+		}
+
+		parent.socket.on('drop', (data) => {
+			if(IS_TURN_TO_SURGE && USE_TEMPORAL) {
+				if(can_use("temporalsurge")) {
+					if(character.name == "Rael") {
+						send_cm("Raelina", 'surged');
+					} else {
+						send_cm("Geoffriel", 'surged');
+					}
+					IS_TURN_TO_SURGE = false;
+					ensure_equipped(TEMPORAL_ORB, 'orb');
+					parent.socket.emit("skill", { name: 'temporalsurge' });
+					ensure_equipped(DPS_ORB_FILTER, 'orb');
+				} else {
+					// console.log(character.name, "Missed surge");
+				}
+			}
+		});
+		const JACKO_FILTER = ItemFilter.ofName('jacko').build();
+		const ORB_FILTER = new ItemFilter()
+		.level('4', '>=')
+		.name('orbofstr')
+		.build();
+	}
+
+	const kiting_origin = {
+		x: -440,
+		y: -1240,
+	},
+		  kiting_range = (2 * 181) / 3;
+
+	function determine_clockwise(origin, target, range) {
+		let cw = get_kite_point(origin, target, range, true);
+		let acw = get_kite_point(origin, target, range, false);
+		return distance_to_point(cw.x, cw.y) < distance_to_point(acw.x, acw.y)
+			? cw
+		: acw;
+	}
+
+	// determines the coodinates where the character:
+	// * in range to attack the enemy
+	// * should drag the enemy in circles around the origin point
+	const COS_THETA = Math.cos(Math.PI / 2);
+	const SIN_THETA = Math.sin(Math.PI / 2);
+	function get_kite_point(origin, target, range, clockwise) {
+		let MOD = clockwise ? -1 : 1;
+
+		let DX = target.x - origin.x;
+		let DY = target.y - origin.y;
+		let HYP = Math.sqrt(DX * DX + DY * DY);
+
+		let scale = range / HYP;
+
+		let NEW_DX = scale * (COS_THETA * DX - MOD * SIN_THETA * DY);
+		let NEW_DY = scale * (MOD * SIN_THETA * DX + COS_THETA * DY);
+
+		return {
+			x: origin.x + NEW_DX,
+			y: origin.y + NEW_DY,
+		};
+	}
+
+	const NEEDS_PRIEST = new Lazy([...to_party, 'AriaHarper'])
+	.map(get_player)
+	.filter(needs_hp);
+
+	const afflicted = (status_name, entity = character) => status_name in entity.s;
+
+	const COAT_13 = ItemFilter.ofName('coat').level('13', '==').build();
+	const D_RING1_FILTER = ItemFilter.ofName('zapper').build();
+	const D_CHEST_FILTER = ItemFilter.ofName('vattire').level('9', '==').build();
+	let USING_LUCK = false;
+
+	if (character.name == 'Rael') {
+		// LUCK FILTERS
+		const L_HELMET_FILTER = ItemFilter.ofName('wcap').level('8', '==').build();
+		const L_EARRING1_FILTER = ItemFilter.ofName('mearring').build();
+		const L_EARRING2_FILTER = ItemFilter.ofName('cloverstud').build();
+		const L_AMULET_FILTER = ItemFilter.ofName('spookyamulet').level('2', '>=').build();
+		const L_OFFHAND_FILTER = ItemFilter.ofName('mshield')
+		.level('9', '==')
+		.build();
+		const L_CAPE_FILTER = ItemFilter.ofName('ecape')
+		.level('9', '==').build();
+		const L_PANTS_FILTER = ItemFilter.ofName('wbreeches')
+		.level('6', '==')
+		.build();
+		const L_CHEST_FILTER = ItemFilter.ofName('wattire').level('6', '==').build();
+		const L_RING_FILTER = ItemFilter.ofName('ringhs').build();
+		const L_ORB_FILTER = ItemFilter.ofName('rabbitsfoot').build();
+		const L_BELT_FILTER = ItemFilter.ofName('santasbelt').level('3', '==').build();
+		const L_GLOVE_FILTER = ItemFilter.ofName('wgloves')
+		.level('7', '==')
+		.build();
+		const L_BOOTS_FILTER = ItemFilter.ofName('wshoes').level('9', '==').build();
+		let LUCK_SET = [
+			[L_HELMET_FILTER, 'helmet'],
+			[L_EARRING1_FILTER, 'earring1'],
+			[L_EARRING2_FILTER, 'earring2'],
+			[L_AMULET_FILTER, 'amulet'],
+			[L_CHEST_FILTER, 'chest'],
+			[L_OFFHAND_FILTER, 'offhand'],
+			[L_CAPE_FILTER, 'cape'],
+			[L_PANTS_FILTER, 'pants'],
+			[L_RING_FILTER, 'ring1'],
+			[L_RING_FILTER, 'ring2'],
+			[L_ORB_FILTER, 'orb'],
+			[L_GLOVE_FILTER, 'gloves'],
+			[L_BOOTS_FILTER, 'shoes'],
+			[L_BELT_FILTER, 'belt']
+		];
+		const BOOSTER_FILTER = new ItemFilter().names('xpbooster', 'luckbooster', 'goldbooster').build();
+		setInterval(() => {
+			USING_LUCK = false;
+			for(let x in parent.entities) {
+				let etarget = parent.entities[x];
+				if (
+					etarget.hp < 20000 &&
+					etarget.mtype == 'bscorpion'
+				) {
+					USING_LUCK = true;
+					ensure_equipped_batch(LUCK_SET);
+					if(can_use("hardshell")) {
+						use_skill("hardshell")
+						use_skill("taunt", etarget);
+					}
+					return;
+				}
+			}
+		}, 250);
+		// DPS filters
+		const D_HELMET_FILTER = 	ItemFilter.ofName('fury')	.level('9', '==').build();
+		const D_EARRING_FILTER = 	ItemFilter.ofName('cearring')	.level('5', '>=').build(); // Doesn't actually matter what order these are put on in.
+		const D_AMULET_FILTER = 	ItemFilter.ofName('snring')	.level('3', '==').build();
+		const D_MAINHAND_FILTER = 	ItemFilter.ofName('fireblade')	.level('13', '==').build();
+		const D_OFFHAND_FILTER = 	ItemFilter.ofName('fireblade')	.level('11', '==').build();
+		const D_CAPE_FILTER = 		ItemFilter.ofName('vcape')	.level('6', '==').build();
+		const D_PANTS_FILTER = 		ItemFilter.ofName('fallen')	.level('8', '==').build();
+		const D_RING_FILTER = 		ItemFilter.ofName('suckerpunch').level('3', '==').build();
+		const D_ORB_FILTER = 		ItemFilter.ofName('orbofstr')	.level('5', '==').build();
+		const D_GLOVE_FILTER = 		ItemFilter.ofName('fierygloves').level('4', '==').build();
+		const D_BELT_FILTER = 		ItemFilter.ofName('strbelt')	.level('5', '==').build();
+		const D_SHIRT_FILTER = 		ItemFilter.ofName("tshirt7")	.level('9', '==').build();
+		const D_BOOTS_FILTER = 		ItemFilter.ofName('wingedboots').level('11', '==').build();
+
+		let PDPS_SET = [
+			[D_GLOVE_FILTER, 'gloves'],
+			[D_BOOTS_FILTER, 'shoes'],
+			[D_ORB_FILTER, 'orb'],
+			[D_RING_FILTER, 'ring1'],
+			[D_RING_FILTER, 'ring2'],
+			[D_PANTS_FILTER, 'pants'],
+			[D_RING_FILTER, 'ring1'],
+			[D_CAPE_FILTER, 'cape'],
+			[D_OFFHAND_FILTER, 'offhand'],
+			[D_SHIRT_FILTER, 'chest'],
+			[D_MAINHAND_FILTER, 'mainhand'],
+			[D_AMULET_FILTER, 'amulet'],
+			[D_EARRING_FILTER, 'earring1'],
+			[D_EARRING_FILTER, 'earring2'],
+			[D_HELMET_FILTER, 'helmet'],
+			[D_BELT_FILTER, 'belt']
+		];
+		const RESET_GEAR = async () => {
+			let booster_index = character.items.findIndex(BOOSTER_FILTER);
+			if(booster_index != -1) {
+				shift(character.items.findIndex(BOOSTER_FILTER), 'luckbooster');
+			}
+			ensure_equipped_batch(PDPS_SET);
+		};
+		const LOOT_CHEST = (id) => {
+			parent.socket.emit('open_chest', {
+				id: id,
+			});
+		};
+		RESET_GEAR();
+		parent.socket.on('drop', (data) => {
+			let { id, x, y } = data;
+			// console.log(data);
+			if (curEvent != null) {
+				setTimeout(LOOT_CHEST, 500, id);
+				setTimeout(RESET_GEAR, 1000);
+				return;
+			}
+			if (distance_to_point(x, y) < 200) {
+				let index_of_booster = character.items.findIndex(BOOSTER_FILTER);
+				if(index_of_booster != -1) {
+					shift(index_of_booster, 'goldbooster');
+				}
+				LOOT_CHEST(id);
+				RESET_GEAR();
+			}
+		});
+	}
+
+	const LOOP = async () => {
+		while (true) {
+			await farm();
+			await sleep(
+				Math.max(0, Math.ceil(Math.max(0, ms_until('attack')))) + 1
+			);
+		}
+	};
+
+	setTimeout(LOOP, 100, true);
+
+	let OUTSIDE_BSCORP_SPAWN = { x: -420, y: -1410, map: 'desertland', };
+	let INSIDE_BSCORP_SPAWN = { x: -398, y: -1261.5, map: 'desertland', };
+	const BELOW_BSCORP_SPAWN = { x: -420, y: -1100, map: 'desertland', };
+
+
+	if (character.name == 'Rael' || character.name == 'Raelina') {
+		setInterval(() => {
+			let attack_target = find_viable_target();
+			if (attack_target != null) {
+				if(distance(character, attack_target) > character.range * 0.8) {
+					moving = false;
+					follow_entity(attack_target, 20);
+				}
+			}
+		}, 400);
+	} else {
+		setInterval(() => {
+			let attack_target = find_viable_target();
+			if (attack_target != null) {
+				if (attack_target.mtype != 'bscorpion') {
+					follow_entity(attack_target, 60);
+				} else if (
+					character.map == 'desertland' &&
+					distance_to_point(kiting_origin.x, kiting_origin.y) < 200
+				) {
+					let movePoint = determine_clockwise(
+						kiting_origin,
+						attack_target,
+						kiting_range
+					);
+					move(movePoint.x, movePoint.y);
+				}
+			}
+		}, 1000);
+	}
+	let LOGGED = 0;
+	let UNEQUIP_OFFHAND = {	slot: 'offhand' };
+	async function farm(location) {
+		let attack_target = find_viable_target();
+
+		if (attack_target != null) {
+			let distance_from_target = distance(attack_target, character);
+			if (distance_from_target < character.range) {
+				switch (character.ctype) {
+					case 'merchant':
+
+						try {
+							if (can_use('attack')) {
+								await attack(attack_target);
+							}
+						} catch(e) {
+							// console.error(e);
+							await sleep(100);
+						}
+						break;
+					case 'warrior':
+						if (can_use('warcry') && !afflicted('warcry')) {
+							warcry();
+						}
+						try {
+							if (can_use('attack')) {
+								let r = Promise.race([
+									attack(attack_target, true),
+									sleep(character.ping * 4),
+								]);
+								await r;
+							} else if(Targeter.WillDieFromFire(attack_target)) {
+								await sleep(100);
+							}
+						} catch (e) {
+							// console.log(JSON.stringify(e))
+							await sleep(100);
+						}
+						break;
+					default:
+						if (can_use('attack')) {
+							await attack(attack_target);
+						}
+				}
+			}
+		} else if (character.name == 'AriaHarper') {
+			// We still want to avoid flaming scorpions.
+			// Aria, there are no flaming scorpions. [12/11/2025]
+			// Move the priest outside of the spawn
+			move_to(location ?? BELOW_BSCORP_SPAWN);
+		} else {
+			let priest_nearby = get_player(merchant);
+			if (
+				(priest_nearby == null || priest_nearby.rip)
+			) {
+				// Move outside the spawn, so we don't die to a random scorpion...
+				move_to(location ?? OUTSIDE_BSCORP_SPAWN);
+			} else {
+				// Move the warriors into the center of the spawn
+				move_to(location ?? INSIDE_BSCORP_SPAWN);
+			}
+		}
+		await sleep(10);
+	}
+
+	//Returns the number of items in your inventory for a given item name;
+	function num_items(name) {
+		let total = 0;
+		for (let i = 0; i < character.items.length; i++) {
+			let item = character.items[i];
+			if (item?.name == name) {
+				total += item.q ?? 1;
+			}
+		}
+		return total;
+	}
+
+	//Returns the distance of the character to a point in the world.
+	function distance_to_point(x, y) {
+		return Math.hypot(character.x - x, character.y - y);
+	}
+
+	var targeter = new Targeter(monster_targets, [...to_party, ...group], {
+		RequireLOS: false,
+		TagTargets: character.name == 'AriaHarper',
+		Solo: false,
+	});
+	let OFFSET = 0;
+	const GOOBRAWL = { x: 0, y: 0, name: 'goobrawl', map: 'goobrawl', };
+	function find_viable_target() {
+		if (curEvent == null) {
+			return targeter.GetPriorityTarget(1, true, /* ignore_fire */ true);
+		} else {
+			return targeter.GetPriorityTarget(
+				1,
+				false,
+				/* ignore_fire */ true,
+				true
+			)[0];
+		}
+	}
+})()
