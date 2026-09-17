@@ -5,6 +5,7 @@ function ms_until(skill_name, timestamp = new Date()) {
 	return -Infinity;
 };
 let luck_targets = ['Rael', 'AriaHarper'];
+let luck_target = 0;
 setInterval(() => {
 	use_skill(
 		'mluck',
