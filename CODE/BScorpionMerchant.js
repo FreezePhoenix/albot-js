@@ -1674,8 +1674,7 @@ restock({
 				switch (character.ctype) {
 					case 'merchant':
 						try {
-							let stunned = attack_target.s.stunned;
-							if (can_use('attack') && (stunned != null || attack_target.target == character.name)) {
+							if (can_use('attack')) {
 								await attack(attack_target);
 							}
 						} catch(e) {
