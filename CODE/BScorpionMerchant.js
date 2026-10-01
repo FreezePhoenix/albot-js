@@ -12,7 +12,7 @@ function konami() {
 	parent.socket.emit("interaction", { key: "A" });
 }
 
-konami();
+// konami();
 
 let stand_analysis = {};
 const analyze = () => {
@@ -325,8 +325,8 @@ restock({
 	let luck_targets = ['Rael', 'AriaHarper'];
 	let luck_target = 0;
 	setInterval(async () => {
-		ensure_equipped_batch([[L_RING_M_FILTER, "ring2"]]);
-		parent.socket.emit('activate',{slot:"ring2"});
+		// ensure_equipped_batch([[L_RING_M_FILTER, "ring2"]]);
+		// parent.socket.emit('activate',{slot:"ring2"});
 		use_skill(
 			'mluck',
 			parent.entities[
@@ -335,8 +335,8 @@ restock({
 				]
 			] ?? character
 		);
-		konami();
-		ensure_equipped_batch([[D_RING_M_FILTER, "ring2"]]);
+		// konami();
+		// ensure_equipped_batch([[D_RING_M_FILTER, "ring2"]]);
 	}, 10000);
 	
 	// for skills of form { name }
@@ -1666,7 +1666,12 @@ restock({
 					character.map == 'desertland' &&
 					distance_to_point(kiting_origin.x, kiting_origin.y) < 200
 				) {
-					follow_entity(attack_target, 20);
+					let movePoint = determine_clockwise(
+						kiting_origin,
+						attack_target,
+						kiting_range
+					);
+					move(movePoint.x, movePoint.y);
 				}
 			}
 		}, 1000);
@@ -1754,7 +1759,7 @@ restock({
 
 	var targeter = new Targeter(monster_targets, [...to_party, ...group], {
 		RequireLOS: false,
-		TagTargets: false,
+		TagTargets: true,
 		Solo: false,
 	});
 	let OFFSET = 0;
