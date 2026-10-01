@@ -5,9 +5,9 @@ function ms_until(skill_name, timestamp = new Date()) {
 	return -Infinity;
 };
 
-parent.socket.emit("interaction", { key: "A" });
-parent.socket.emit("move", { m: -1, key: ["uuddlrlrB"] });
-parent.socket.emit("interaction", { key: "A" });
+// parent.socket.emit("interaction", { key: "A" });
+// parent.socket.emit("move", { m: -1, key: ["uuddlrlrB"] });
+// parent.socket.emit("interaction", { key: "A" });
 
 let luck_targets = ['Rael', 'AriaHarper'];
 let luck_target = 0;
