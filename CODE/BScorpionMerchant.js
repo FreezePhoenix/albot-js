@@ -5,22 +5,14 @@ function ms_until(skill_name, timestamp = new Date()) {
 	return -Infinity;
 };
 
-// parent.socket.emit("interaction", { key: "A" });
-// parent.socket.emit("move", { m: -1, key: ["uuddlrlrB"] });
-// parent.socket.emit("interaction", { key: "A" });
+function konami() {
 
-let luck_targets = ['Rael', 'AriaHarper'];
-let luck_target = 0;
-setInterval(() => {
-	use_skill(
-		'mluck',
-		parent.entities[
-			luck_targets[
-				(luck_target = ++luck_target % luck_targets.length)
-			]
-		] ?? character
-	);
-}, 2100);
+	parent.socket.emit("interaction", { key: "A" });
+	parent.socket.emit("move", { m: -1, key: ["uuddlrlrB"] });
+	parent.socket.emit("interaction", { key: "A" });
+}
+
+konami();
 
 let stand_analysis = {};
 const analyze = () => {
@@ -326,6 +318,27 @@ restock({
 		}
 	}
 
+	
+	const L_RING_M_FILTER = ItemFilter.ofName('darktristone').level('3', '==').build();
+	const D_RING_M_FILTER = ItemFilter.ofName('canopener').build();
+
+	let luck_targets = ['Rael', 'AriaHarper'];
+	let luck_target = 0;
+	setInterval(async () => {
+		ensure_equipped_batch([[L_RING_M_FILTER, "ring2"]]);
+		parent.socket.emit('activate',{slot:"ring2"});
+		use_skill(
+			'mluck',
+			parent.entities[
+				luck_targets[
+					(luck_target = ++luck_target % luck_targets.length)
+				]
+			] ?? character
+		);
+		konami();
+		ensure_equipped_batch([[D_RING_M_FILTER, "ring2"]]);
+	}, 10000);
+	
 	// for skills of form { name }
 	const NAME_ADAPTER = CompleteAdapter("name");
 	// for skills of form { name, id }
@@ -1653,12 +1666,7 @@ restock({
 					character.map == 'desertland' &&
 					distance_to_point(kiting_origin.x, kiting_origin.y) < 200
 				) {
-					let movePoint = determine_clockwise(
-						kiting_origin,
-						attack_target,
-						kiting_range
-					);
-					move(movePoint.x, movePoint.y);
+					follow_entity(attack_target, 20);
 				}
 			}
 		}, 1000);
@@ -1746,7 +1754,7 @@ restock({
 
 	var targeter = new Targeter(monster_targets, [...to_party, ...group], {
 		RequireLOS: false,
-		TagTargets: character.name == 'AriaHarper',
+		TagTargets: false,
 		Solo: false,
 	});
 	let OFFSET = 0;
