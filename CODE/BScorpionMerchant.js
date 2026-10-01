@@ -1673,9 +1673,9 @@ restock({
 			if (distance_from_target < character.range) {
 				switch (character.ctype) {
 					case 'merchant':
-
 						try {
-							if (can_use('attack')) {
+							let stunned = attack_target.s.stunned;
+							if (can_use('attack') && (stunned != null || attack_target.target == character.name)) {
 								await attack(attack_target);
 							}
 						} catch(e) {
