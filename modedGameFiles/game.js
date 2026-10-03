@@ -5,7 +5,7 @@ var textures = {},
 	SSU = {};
 var FM = {};
 
-const msgpack_parser = require(".modedGameFiles/msgpack_parser.js");
+const msgpack_parser = require("./modedGameFiles/msgpack_parser.js");
 var Socket = require('socket.io-client'),
 	is_sdk = false,
 	is_game = 0,
