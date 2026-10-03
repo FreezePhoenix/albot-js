@@ -22,7 +22,7 @@ var Game = function (
 ) {
 	this.name = name;
 	this.address = address;
-	this.path = path;
+	this.path = path.replace(/\/$/, "-msgpack/");
 	this.userId = dataWrapper.userId;
 	this.characterId = characterId;
 	this.socketAuth = dataWrapper.userAuth;
