@@ -4,6 +4,8 @@ var textures = {},
 	SS = {},
 	SSU = {};
 var FM = {};
+
+const msgpack_parser = require(".modedGameFiles/msgpack_parser.js");
 var Socket = require('socket.io-client'),
 	is_sdk = false,
 	is_game = 0,
@@ -605,6 +607,7 @@ function init_socket() {
 						transports: ['websocket'],
 						autoConnect: false,
 						path,
+						parser: msgpack_parser.createParser({ maxPacketBytes: 64 * 1024 }),
 						extraHeaders: {
 							'user-agent': 'AdventureLandBot: (v1.0.0)',
 							referer: 'http://adventure.land/',
