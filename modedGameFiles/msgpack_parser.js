@@ -1,6 +1,6 @@
 "use strict";
 
-const { Decoder: MessagePackDecoder, Encoder: MessagePackEncoder, ExtData } = require("../bot-web-interface/node_modules/@msgpack/msgpack");
+const { Decoder: MessagePackDecoder, Encoder: MessagePackEncoder, ExtData } = require("../bot-web-interface/webServer/public/parser/msgpack.js");
 
 const protocol = 5;
 const PacketType = Object.freeze({
