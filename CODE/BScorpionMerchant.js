@@ -176,7 +176,7 @@ setInterval(() => {
 
 restock({
 	sell: {
-		offeringp: [5000000, 500, -1],
+		// offeringp: [5000000, 500, -1],
 	},
 	buy: {},
 });
